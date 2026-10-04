@@ -1,0 +1,73 @@
+
+================================================================================
+LIMITATIONS DU PROJET — CLIP LoRA Fashion-MNIST
+================================================================================
+
+1. DATASET
+   - Fashion-MNIST est un dataset jouet (28x28 grayscale) — les résultats
+     ne se généralisent pas directement à des images RGB haute résolution.
+   - Taille limitée : 4 000 images d'entraînement, 2 000 d'évaluation.
+   - Les classes sont déséquilibrées (Shirt vs Trouser).
+
+2. SINGLE SEED
+   - Toutes les expériences utilisent SEED=42.
+   - Aucune répétition multi-seed → les différences < 1% ne sont PAS
+     fiables (écart-type inter-seed estimé ~0.5-1%).
+   - Mitigation : les tests McNemar + bootstrap CI donnent une idée
+     de la variance intra-seed, mais pas inter-seed.
+
+3. LoRA — HYPERPARAMÈTRES
+   - r=8, alpha=16, dropout=0.1 fixés manuellement.
+   - Aucun grid search → pourrait être sous-optimal.
+   - Target modules limités à {q_proj, v_proj, k_proj, out_proj}.
+   - k_proj/out_proj ajoutés dans A2 → ablation fine non testée.
+
+4. DRIFT — MÉTRIQUE
+   - Drift angulaire (1 - cos) choisi car interprétable ∈ [0, 2].
+   - Drift L2 également calculé mais non utilisé comme métrique principale.
+   - Le drift est mesuré sur l'ensemble eval — pas par image individuelle.
+
+5. RETRIEVAL
+   - Text→Image P@K calculé sur 10 prompts fixes (un par classe).
+   - Pas de test sur des prompts "naturels" variés (sauf §4.4).
+   - Product queries (§4.5) : ground truth via label Fashion-MNIST,
+     pas via annotation humaine.
+
+6. ÉQUITÉ INTER-MODÈLES
+   - A1 (Linear Head) : 5 130 params vs A2/B (LoRA) : ~500K-1M params.
+   - Comparaison "à paramètres égaux" non faite.
+   - ZS est un baseline sans apprentissage → comparer son drift (=0) aux
+     autres n'a pas de sens sémantique.
+
+7. GÉNÉRALISATION
+   - Toutes les conclusions sont valides UNIQUEMENT pour :
+       * CLIP ViT-B/32
+       * Fashion-MNIST
+       * 5 epochs max
+   - Aucun test de transfert (zero-shot cross-dataset).
+
+8. STATISTIQUES
+   - Bootstrap CI : 1000 itérations, seed fixé.
+   - McNemar : correction de continuité appliquée.
+   - Test binomial §4.6 : hypothèse H0 p=0.5 — discutable car les flips
+     good→bad et bad→good ne sont pas nécessairement symétriques.
+
+9. REPRODUCTIBILITÉ
+   - cudnn.deterministic=True mais T4 peut avoir des non-déterminismes.
+   - torchvision / transformers versions figées (cf. PARTIE 0).
+   - DataLoader num_workers=2 → ordre des batchs non garanti.
+
+10. ANALYSE QUALITATIVE
+    - Error galleries limitées à 10 exemples par modèle.
+    - Pas d'annotation fine des types d'erreurs (forme / texture / couleur).
+
+================================================================================
+RECOMMANDATIONS POUR TRAVAUX FUTURS
+================================================================================
+[ ] Multi-seed (≥3) pour quantifier la variance inter-seed
+[ ] Grid search LoRA (r ∈ {4,8,16,32}, alpha ∈ {8,16,32})
+[ ] Test sur Fashion-MNIST RGB upscalé + dataset réel (DeepFashion)
+[ ] Comparaison à paramètres égaux (A1 vs LoRA réduit)
+[ ] Analyse drift image-par-image (pas moyenne)
+[ ] Étude de l'oubli catastrophique (CLIP zero-shot après LoRA)
+================================================================================

@@ -1,0 +1,5 @@
+index,Zero-shot,A1 LinearHead,A2 LoRA V+T,B LoRA Vision
+Zero-shot,1.0,0.0,0.0,0.0
+A1 LinearHead,0.0,1.0,0.0,0.0
+A2 LoRA V+T,0.0,0.0,1.0,0.01741713028689995
+B LoRA Vision,0.0,0.0,0.01741713028689995,1.0

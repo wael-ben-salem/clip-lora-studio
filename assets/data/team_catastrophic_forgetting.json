@@ -1,0 +1,87 @@
+{
+  "ood_prompts": {
+    "animaux": [
+      "a photo of a cat",
+      "a photo of a dog",
+      "a photo of a bird",
+      "a photo of a horse",
+      "a photo of a fish"
+    ],
+    "objets": [
+      "a photo of a car",
+      "a photo of a phone",
+      "a photo of a chair",
+      "a photo of a book",
+      "a photo of a cup"
+    ],
+    "formes": [
+      "a photo of a circle",
+      "a photo of a square",
+      "a photo of a triangle",
+      "a photo of a star"
+    ],
+    "couleurs": [
+      "a red object",
+      "a blue object",
+      "a green object",
+      "a yellow object",
+      "a black object"
+    ]
+  },
+  "results": {
+    "Zero-shot": {
+      "animaux": {
+        "mean_margin": 0.04560071974992752,
+        "pct_positive": 0.9855
+      },
+      "objets": {
+        "mean_margin": 0.03731470927596092,
+        "pct_positive": 0.875
+      },
+      "formes": {
+        "mean_margin": 0.040117133408784866,
+        "pct_positive": 0.915
+      },
+      "couleurs": {
+        "mean_margin": 0.053910672664642334,
+        "pct_positive": 1.0
+      }
+    },
+    "A2 LoRA V+T": {
+      "animaux": {
+        "mean_margin": 0.10402092337608337,
+        "pct_positive": 1.0
+      },
+      "objets": {
+        "mean_margin": 0.09996352344751358,
+        "pct_positive": 0.9995
+      },
+      "formes": {
+        "mean_margin": 0.09135434776544571,
+        "pct_positive": 1.0
+      },
+      "couleurs": {
+        "mean_margin": 0.10200532525777817,
+        "pct_positive": 1.0
+      }
+    },
+    "B LoRA V": {
+      "animaux": {
+        "mean_margin": 0.10532447695732117,
+        "pct_positive": 1.0
+      },
+      "objets": {
+        "mean_margin": 0.10068820416927338,
+        "pct_positive": 0.9995
+      },
+      "formes": {
+        "mean_margin": 0.09029585123062134,
+        "pct_positive": 1.0
+      },
+      "couleurs": {
+        "mean_margin": 0.10541532933712006,
+        "pct_positive": 1.0
+      }
+    }
+  }
+}

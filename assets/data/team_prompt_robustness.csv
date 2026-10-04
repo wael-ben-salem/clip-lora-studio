@@ -1,0 +1,29 @@
+template,acc,tag
+a photo of a {},0.5,ZS
+a photo of the {},0.4665,ZS
+an image of a {},0.4965,ZS
+a picture of a {},0.503,ZS
+a {} in a photo,0.393,ZS
+this is a {},0.51,ZS
+{},0.412,ZS
+a photo of a {},0.5,A1
+a photo of the {},0.4665,A1
+an image of a {},0.4965,A1
+a picture of a {},0.503,A1
+a {} in a photo,0.393,A1
+this is a {},0.51,A1
+{},0.412,A1
+a photo of a {},0.8735,A2
+a photo of the {},0.8495,A2
+an image of a {},0.867,A2
+a picture of a {},0.8745,A2
+a {} in a photo,0.8445,A2
+this is a {},0.868,A2
+{},0.827,A2
+a photo of a {},0.8625,B
+a photo of the {},0.832,B
+an image of a {},0.853,B
+a picture of a {},0.862,B
+a {} in a photo,0.8325,B
+this is a {},0.8485,B
+{},0.799,B

@@ -1,0 +1,9 @@
+{
+  "Q1. Le fine-tuning am\u00e9liore-t-il la classification ?": "ZS=0.5000 | A1=0.6705 | A2=0.8735 | B=0.8625\n   Meilleur : A2 LoRA V+T (0.8735)",
+  "Q2. Que devient Text\u2192Image P@1 ?": "ZS=0.4000 | A1=0.4000 (identique, encoder fig\u00e9) | A2=0.9000 | B=0.8000\n   Meilleur : A2 \u03bb=1.0 (1.0000)",
+  "Q3. Que devient Image\u2192Text Top-1 ?": "ZS=0.5000 | A2=0.8735 | B=0.8625",
+  "Q4. Le drift est-il corr\u00e9l\u00e9 \u00e0 la perte de retrieval ?": "Voir figures drift_vs_retrieval (Pearson/Spearman calcul\u00e9s par classe)",
+  "Q5. Quelle strat\u00e9gie offre le meilleur compromis ?": "Voir TEAM_FINAL_TABLE ci-dessous (score = ClsAcc + P@1 \u2212 Drift)",
+  "Q6. Combien de param\u00e8tres entra\u00eenables ?": "Zero-shot: 0 | A1: 5,130 | A2: 983,040 | B: 491,520",
+  "Q7. Y a-t-il un trade-off classification/retrieval ?": "\u00c0 confirmer visuellement sur la hero figure et le trade-off map"
+}

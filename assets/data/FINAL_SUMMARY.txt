@@ -1,0 +1,26 @@
+
+================================================================================
+SYNTHÈSE FINALE — CLIP LoRA sur Fashion-MNIST
+================================================================================
+
+BASELINE
+  Zero-shot acc       : 0.5000
+  Zero-shot P@1       : 0.4000
+
+MEILLEUR MODÈLE
+  Nom                 : A2
+  Accuracy            : 0.8736
+  Gain vs ZS          : +37.36%
+
+COMPARAISONS
+  A2 (LoRA V+T)  : acc=0.8735 | P@1=0.9000 | drift=0.2399
+  B  (LoRA V)    : acc=0.8625 | P@1=0.8000 | drift=0.2319
+  A1 (LinearHead): acc=0.6705 | P@1=0.4000 | drift=-0.0000
+
+TESTS STATISTIQUES
+  McNemar ZS vs A2 p-value : < 0.001 (significatif)
+  McNemar ZS vs B  p-value : < 0.001 (significatif)
+  Decision flips A2 : 800 bad→good / 53 good→bad
+  Decision flips B  : 775 bad→good / 50 good→bad
+
+================================================================================

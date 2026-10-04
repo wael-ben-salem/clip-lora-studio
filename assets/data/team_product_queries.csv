@@ -1,0 +1,226 @@
+query,rank,idx,true_class,score,tag
+black bag,1,1127,Bag,0.291562020778656,ZS
+black bag,2,1019,Bag,0.2847461700439453,ZS
+black bag,3,1246,Bag,0.2846779227256775,ZS
+black bag,4,10,Bag,0.2839069962501526,ZS
+black bag,5,1430,Bag,0.28335678577423096,ZS
+red dress,1,842,T-shirt/top,0.2169453501701355,ZS
+red dress,2,787,T-shirt/top,0.21601393818855286,ZS
+red dress,3,641,T-shirt/top,0.21431811153888702,ZS
+red dress,4,184,T-shirt/top,0.21298551559448242,ZS
+red dress,5,732,Dress,0.21176005899906158,ZS
+white sneaker,1,552,Ankle boot,0.3084309995174408,ZS
+white sneaker,2,499,Sneaker,0.3059787154197693,ZS
+white sneaker,3,1628,Ankle boot,0.30562230944633484,ZS
+white sneaker,4,1882,Sneaker,0.30404025316238403,ZS
+white sneaker,5,1224,Sneaker,0.3036629557609558,ZS
+blue shirt,1,1683,T-shirt/top,0.23524829745292664,ZS
+blue shirt,2,235,T-shirt/top,0.229787215590477,ZS
+blue shirt,3,1424,T-shirt/top,0.22886179387569427,ZS
+blue shirt,4,32,T-shirt/top,0.22871893644332886,ZS
+blue shirt,5,680,Pullover,0.2281535118818283,ZS
+striped pullover,1,644,Shirt,0.24490253627300262,ZS
+striped pullover,2,797,Shirt,0.24367156624794006,ZS
+striped pullover,3,61,T-shirt/top,0.23693373799324036,ZS
+striped pullover,4,923,Pullover,0.23568236827850342,ZS
+striped pullover,5,1206,Shirt,0.23487035930156708,ZS
+ankle boot,1,208,Ankle boot,0.3057546019554138,ZS
+ankle boot,2,1547,Ankle boot,0.305422306060791,ZS
+ankle boot,3,98,Ankle boot,0.30414852499961853,ZS
+ankle boot,4,567,Ankle boot,0.30345845222473145,ZS
+ankle boot,5,1990,Ankle boot,0.3032612204551697,ZS
+denim trouser,1,1708,Trouser,0.2746259868144989,ZS
+denim trouser,2,1289,Trouser,0.2741835117340088,ZS
+denim trouser,3,220,Trouser,0.2724235951900482,ZS
+denim trouser,4,1651,Trouser,0.2705448865890503,ZS
+denim trouser,5,1429,Trouser,0.2624794840812683,ZS
+long coat,1,881,Shirt,0.2902442514896393,ZS
+long coat,2,1727,Dress,0.28779923915863037,ZS
+long coat,3,1556,Shirt,0.2836165428161621,ZS
+long coat,4,1868,Dress,0.2830416262149811,ZS
+long coat,5,1218,Shirt,0.2826066017150879,ZS
+floral dress,1,732,Dress,0.23280459642410278,ZS
+floral dress,2,1837,Dress,0.23270659148693085,ZS
+floral dress,3,842,T-shirt/top,0.23247098922729492,ZS
+floral dress,4,1551,Dress,0.22979241609573364,ZS
+floral dress,5,641,T-shirt/top,0.22850587964057922,ZS
+casual t-shirt,1,806,T-shirt/top,0.27903658151626587,ZS
+casual t-shirt,2,1480,T-shirt/top,0.27848875522613525,ZS
+casual t-shirt,3,1335,T-shirt/top,0.2767130732536316,ZS
+casual t-shirt,4,680,Pullover,0.2753946781158447,ZS
+casual t-shirt,5,234,T-shirt/top,0.2753649055957794,ZS
+wool coat,1,881,Shirt,0.3023158311843872,ZS
+wool coat,2,573,Coat,0.29315823316574097,ZS
+wool coat,3,1395,Shirt,0.2911762297153473,ZS
+wool coat,4,196,Coat,0.28977471590042114,ZS
+wool coat,5,1560,Pullover,0.2897300720214844,ZS
+leather sandal,1,523,Ankle boot,0.26370131969451904,ZS
+leather sandal,2,423,Sandal,0.26196879148483276,ZS
+leather sandal,3,966,Ankle boot,0.26001930236816406,ZS
+leather sandal,4,405,Ankle boot,0.25824713706970215,ZS
+leather sandal,5,1998,Ankle boot,0.2578403055667877,ZS
+sporty sneaker,1,499,Sneaker,0.2793942987918854,ZS
+sporty sneaker,2,1545,Sneaker,0.27644476294517517,ZS
+sporty sneaker,3,1628,Ankle boot,0.27623820304870605,ZS
+sporty sneaker,4,552,Ankle boot,0.2753964960575104,ZS
+sporty sneaker,5,801,Sneaker,0.27534016966819763,ZS
+elegant dress,1,787,T-shirt/top,0.27736619114875793,ZS
+elegant dress,2,184,T-shirt/top,0.27704668045043945,ZS
+elegant dress,3,225,Shirt,0.2762572467327118,ZS
+elegant dress,4,641,T-shirt/top,0.27391722798347473,ZS
+elegant dress,5,1450,Shirt,0.2674245536327362,ZS
+winter coat,1,1757,Coat,0.2616810202598572,ZS
+winter coat,2,327,Coat,0.2604621648788452,ZS
+winter coat,3,881,Shirt,0.25980469584465027,ZS
+winter coat,4,573,Coat,0.25705498456954956,ZS
+winter coat,5,1922,Coat,0.25591883063316345,ZS
+black bag,1,151,Bag,0.2963748872280121,A2
+black bag,2,1430,Bag,0.2933260500431061,A2
+black bag,3,1834,Bag,0.29287010431289673,A2
+black bag,4,216,Bag,0.2925482988357544,A2
+black bag,5,1823,Bag,0.29230737686157227,A2
+red dress,1,1090,Dress,0.19811688363552094,A2
+red dress,2,528,Dress,0.19764526188373566,A2
+red dress,3,1929,Dress,0.19188831746578217,A2
+red dress,4,398,Dress,0.18816928565502167,A2
+red dress,5,441,Dress,0.18806959688663483,A2
+white sneaker,1,58,Sneaker,0.31680434942245483,A2
+white sneaker,2,1119,Sneaker,0.3158297836780548,A2
+white sneaker,3,978,Sneaker,0.3150891959667206,A2
+white sneaker,4,1266,Sneaker,0.3148265480995178,A2
+white sneaker,5,396,Ankle boot,0.31387993693351746,A2
+blue shirt,1,628,Shirt,0.2393646240234375,A2
+blue shirt,2,60,Shirt,0.2356497347354889,A2
+blue shirt,3,331,Shirt,0.23297058045864105,A2
+blue shirt,4,1445,T-shirt/top,0.23294033110141754,A2
+blue shirt,5,677,T-shirt/top,0.23291964828968048,A2
+striped pullover,1,781,Pullover,0.3310614824295044,A2
+striped pullover,2,711,Dress,0.30161166191101074,A2
+striped pullover,3,1514,Pullover,0.2827882170677185,A2
+striped pullover,4,850,T-shirt/top,0.2648393213748932,A2
+striped pullover,5,1919,Shirt,0.2635901868343353,A2
+ankle boot,1,1277,Ankle boot,0.3179945647716522,A2
+ankle boot,2,1478,Ankle boot,0.3166712522506714,A2
+ankle boot,3,1310,Ankle boot,0.31655657291412354,A2
+ankle boot,4,1330,Ankle boot,0.3164397180080414,A2
+ankle boot,5,147,Ankle boot,0.31528034806251526,A2
+denim trouser,1,777,Trouser,0.29104673862457275,A2
+denim trouser,2,1233,Trouser,0.2906489968299866,A2
+denim trouser,3,1069,Trouser,0.28977370262145996,A2
+denim trouser,4,534,Trouser,0.28910139203071594,A2
+denim trouser,5,1907,Trouser,0.28840816020965576,A2
+long coat,1,1057,Dress,0.2817760109901428,A2
+long coat,2,506,Coat,0.2797470688819885,A2
+long coat,3,1392,Coat,0.27917611598968506,A2
+long coat,4,1037,Dress,0.2790902554988861,A2
+long coat,5,1781,Coat,0.27817681431770325,A2
+floral dress,1,1924,Dress,0.2719414234161377,A2
+floral dress,2,456,Dress,0.26847565174102783,A2
+floral dress,3,945,Dress,0.262950599193573,A2
+floral dress,4,1764,Dress,0.25771862268447876,A2
+floral dress,5,1968,Dress,0.2574521601200104,A2
+casual t-shirt,1,1865,Pullover,0.3107644319534302,A2
+casual t-shirt,2,422,T-shirt/top,0.310733824968338,A2
+casual t-shirt,3,846,T-shirt/top,0.31064605712890625,A2
+casual t-shirt,4,1833,T-shirt/top,0.3101211488246918,A2
+casual t-shirt,5,281,T-shirt/top,0.30987486243247986,A2
+wool coat,1,1781,Coat,0.29114899039268494,A2
+wool coat,2,1776,Dress,0.290081650018692,A2
+wool coat,3,144,Coat,0.2870374619960785,A2
+wool coat,4,1592,Coat,0.28629475831985474,A2
+wool coat,5,1037,Dress,0.2848265767097473,A2
+leather sandal,1,1032,Sandal,0.30275285243988037,A2
+leather sandal,2,1800,Sandal,0.30249351263046265,A2
+leather sandal,3,1582,Sandal,0.3012791574001312,A2
+leather sandal,4,104,Sandal,0.29880452156066895,A2
+leather sandal,5,929,Sandal,0.29763567447662354,A2
+sporty sneaker,1,396,Ankle boot,0.2857644855976105,A2
+sporty sneaker,2,1183,Sneaker,0.2814737856388092,A2
+sporty sneaker,3,58,Sneaker,0.2799411416053772,A2
+sporty sneaker,4,1025,Sneaker,0.2794416844844818,A2
+sporty sneaker,5,1119,Sneaker,0.2793509364128113,A2
+elegant dress,1,398,Dress,0.29206162691116333,A2
+elegant dress,2,1165,Dress,0.2873653769493103,A2
+elegant dress,3,727,Dress,0.28556862473487854,A2
+elegant dress,4,1851,Dress,0.2850310802459717,A2
+elegant dress,5,494,Dress,0.2843501567840576,A2
+winter coat,1,1757,Coat,0.283199667930603,A2
+winter coat,2,1228,Coat,0.2788538932800293,A2
+winter coat,3,1146,Coat,0.27655306458473206,A2
+winter coat,4,144,Coat,0.27615785598754883,A2
+winter coat,5,31,Coat,0.2756660282611847,A2
+black bag,1,1823,Bag,0.29560479521751404,B
+black bag,2,1834,Bag,0.29254910349845886,B
+black bag,3,151,Bag,0.2920737862586975,B
+black bag,4,1430,Bag,0.29109126329421997,B
+black bag,5,1127,Bag,0.291034996509552,B
+red dress,1,528,Dress,0.1983146369457245,B
+red dress,2,1090,Dress,0.19678543508052826,B
+red dress,3,1929,Dress,0.19137875735759735,B
+red dress,4,861,Dress,0.19122770428657532,B
+red dress,5,441,Dress,0.19113150238990784,B
+white sneaker,1,1119,Sneaker,0.3269135355949402,B
+white sneaker,2,58,Sneaker,0.32511788606643677,B
+white sneaker,3,1224,Sneaker,0.32213732600212097,B
+white sneaker,4,1461,Sneaker,0.32141584157943726,B
+white sneaker,5,1882,Sneaker,0.3214033544063568,B
+blue shirt,1,628,Shirt,0.23561617732048035,B
+blue shirt,2,60,Shirt,0.23500874638557434,B
+blue shirt,3,797,Shirt,0.23395155370235443,B
+blue shirt,4,677,T-shirt/top,0.23094439506530762,B
+blue shirt,5,32,T-shirt/top,0.229418084025383,B
+striped pullover,1,781,Pullover,0.3301869332790375,B
+striped pullover,2,711,Dress,0.3104615807533264,B
+striped pullover,3,1514,Pullover,0.2825441062450409,B
+striped pullover,4,850,T-shirt/top,0.2736830413341522,B
+striped pullover,5,1074,Pullover,0.2707824110984802,B
+ankle boot,1,6,Ankle boot,0.31870657205581665,B
+ankle boot,2,307,Ankle boot,0.3179323077201843,B
+ankle boot,3,1478,Ankle boot,0.3174892067909241,B
+ankle boot,4,981,Ankle boot,0.3174022138118744,B
+ankle boot,5,1338,Ankle boot,0.31722861528396606,B
+denim trouser,1,686,Trouser,0.2902493178844452,B
+denim trouser,2,777,Trouser,0.289808452129364,B
+denim trouser,3,534,Trouser,0.2886633574962616,B
+denim trouser,4,1849,Trouser,0.2876794934272766,B
+denim trouser,5,466,Trouser,0.2860366702079773,B
+long coat,1,1392,Coat,0.28864437341690063,B
+long coat,2,1776,Dress,0.2883276343345642,B
+long coat,3,506,Coat,0.28760284185409546,B
+long coat,4,1452,Coat,0.28655049204826355,B
+long coat,5,1037,Dress,0.28479090332984924,B
+floral dress,1,1924,Dress,0.2783740758895874,B
+floral dress,2,456,Dress,0.27835512161254883,B
+floral dress,3,945,Dress,0.2724568843841553,B
+floral dress,4,1764,Dress,0.2668425142765045,B
+floral dress,5,1837,Dress,0.26306402683258057,B
+casual t-shirt,1,846,T-shirt/top,0.30740928649902344,B
+casual t-shirt,2,422,T-shirt/top,0.3073507249355316,B
+casual t-shirt,3,281,T-shirt/top,0.30726248025894165,B
+casual t-shirt,4,1865,Pullover,0.3066783547401428,B
+casual t-shirt,5,1480,T-shirt/top,0.30621805787086487,B
+wool coat,1,1776,Dress,0.29560816287994385,B
+wool coat,2,160,Dress,0.2882908582687378,B
+wool coat,3,1781,Coat,0.2871611714363098,B
+wool coat,4,1592,Coat,0.2869222164154053,B
+wool coat,5,144,Coat,0.2861231863498688,B
+leather sandal,1,1800,Sandal,0.3117821216583252,B
+leather sandal,2,1933,Sandal,0.3059578835964203,B
+leather sandal,3,1032,Sandal,0.30489426851272583,B
+leather sandal,4,1995,Sandal,0.29837191104888916,B
+leather sandal,5,1582,Sandal,0.2978277802467346,B
+sporty sneaker,1,396,Ankle boot,0.28334906697273254,B
+sporty sneaker,2,1025,Sneaker,0.2833385169506073,B
+sporty sneaker,3,1882,Sneaker,0.28256168961524963,B
+sporty sneaker,4,1183,Sneaker,0.2814163565635681,B
+sporty sneaker,5,1119,Sneaker,0.28126057982444763,B
+elegant dress,1,398,Dress,0.2929292917251587,B
+elegant dress,2,727,Dress,0.2888215482234955,B
+elegant dress,3,1851,Dress,0.28667935729026794,B
+elegant dress,4,154,Dress,0.28625500202178955,B
+elegant dress,5,1165,Dress,0.2861568331718445,B
+winter coat,1,1757,Coat,0.2824752628803253,B
+winter coat,2,465,Coat,0.2795964479446411,B
+winter coat,3,1392,Coat,0.2781459093093872,B
+winter coat,4,1499,Coat,0.27795886993408203,B
+winter coat,5,1146,Coat,0.2770898938179016,B

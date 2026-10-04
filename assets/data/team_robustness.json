@@ -1,0 +1,64 @@
+{
+  "perturbations": [
+    {
+      "perturbation": "Original",
+      "acc_zs": 0.506,
+      "acc_a2": 0.862,
+      "acc_b": 0.852
+    },
+    {
+      "perturbation": "Gauss \u03c3=0.05",
+      "acc_zs": 0.536,
+      "acc_a2": 0.824,
+      "acc_b": 0.806
+    },
+    {
+      "perturbation": "Gauss \u03c3=0.10",
+      "acc_zs": 0.56,
+      "acc_a2": 0.784,
+      "acc_b": 0.77
+    },
+    {
+      "perturbation": "Gauss \u03c3=0.20",
+      "acc_zs": 0.538,
+      "acc_a2": 0.726,
+      "acc_b": 0.712
+    },
+    {
+      "perturbation": "Blur k=3",
+      "acc_zs": 0.512,
+      "acc_a2": 0.864,
+      "acc_b": 0.846
+    },
+    {
+      "perturbation": "Blur k=5",
+      "acc_zs": 0.506,
+      "acc_a2": 0.864,
+      "acc_b": 0.852
+    },
+    {
+      "perturbation": "Blur k=9",
+      "acc_zs": 0.514,
+      "acc_a2": 0.866,
+      "acc_b": 0.846
+    },
+    {
+      "perturbation": "Rot 5\u00b0",
+      "acc_zs": 0.492,
+      "acc_a2": 0.87,
+      "acc_b": 0.858
+    },
+    {
+      "perturbation": "Rot 15\u00b0",
+      "acc_zs": 0.352,
+      "acc_a2": 0.798,
+      "acc_b": 0.782
+    },
+    {
+      "perturbation": "Rot 30\u00b0",
+      "acc_zs": 0.262,
+      "acc_a2": 0.544,
+      "acc_b": 0.572
+    }
+  ]
+}

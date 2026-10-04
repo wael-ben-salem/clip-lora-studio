@@ -1,0 +1,29 @@
+{
+  "comparison": [
+    {
+      "model": "A1 LinearHead",
+      "params": 5130,
+      "acc": 0.6705,
+      "p1": 0.4,
+      "drift": 0.0,
+      "type": "head seul"
+    },
+    {
+      "model": "LoRA minimal (r=1)",
+      "params": 30720,
+      "acc": 0.7435,
+      "p1": 0.6,
+      "drift": 0.06013112887740135,
+      "type": "LoRA minimal"
+    },
+    {
+      "model": "A2 LoRA V+T (r=8)",
+      "params": 983040,
+      "acc": 0.8735,
+      "p1": 0.9,
+      "drift": 0.23989738523960114,
+      "type": "LoRA complet"
+    }
+  ],
+  "lora_minimal_params": 30720
+}

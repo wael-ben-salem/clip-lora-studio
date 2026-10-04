@@ -1,0 +1,4 @@
+model,params,acc,p1,drift,type
+A1 LinearHead,5130,0.6705,0.4,0.0,head seul
+LoRA minimal (r=1),30720,0.7435,0.6,0.06013112887740135,LoRA minimal
+A2 LoRA V+T (r=8),983040,0.8735,0.9,0.23989738523960114,LoRA complet

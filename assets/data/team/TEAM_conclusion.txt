@@ -1,0 +1,21 @@
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  🏁 TEAM CONCLUSION — CLIP Alignment Study                          ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  Question centrale : un CLIP fine-tuné peut-il devenir meilleur     ║
+║  en classification tout en devenant moins bon en retrieval ?        ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  RÉSULTATS CLÉS                                                     ║
+║  ────────────────────────────────────────────────────────────────── ║
+║  • Zero-shot baseline : acc=0.5000 | P@1=0.4000 | T1=0.5000  ║
+║  • Meilleure classification : A2 LoRA V+T     acc=0.8735             ║
+║  • Meilleur T→I P@1        : A2 λ=1.0        P@1=1.0000             ║
+║  • Drift minimal           : Zero-shot       drift=0.0000        ║
+║  • Meilleur compromis      : A2 λ=1.0        score=1.7354 ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  RÉPONSES AUX 4 QUESTIONS CIBLES                                    ║
+║  1) Le fine-tuning améliore-t-il la classification ? OUI          ║
+║  2) Que devient le retrieval ? Voir Δ dans Q&A automatique           ║
+║  3) Peut-on relier drift et perte de retrieval ? Voir figure A2     ║
+║  4) Quelle stratégie pour meilleur compromis ? Voir hero figure     ║
+╚══════════════════════════════════════════════════════════════════════╝
