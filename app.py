@@ -6,6 +6,8 @@ Phase 4 — Les 5 onglets fonctionnels
 """
 
 import gradio as gr
+import os
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -614,9 +616,11 @@ def build_app():
 # =============================================================================
 if __name__ == "__main__":
     demo = build_app()
+    PORT = int(os.environ.get("PORT", 10000))
+
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7860,
+        server_port=PORT,
         show_error=True,
         share=False,
     )
