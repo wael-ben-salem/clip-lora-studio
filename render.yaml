@@ -3,14 +3,24 @@ services:
     name: clip-lora-studio
     runtime: python
     plan: free
+    region: frankfurt        # ou oregon / singapore
+    branch: main
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
     startCommand: python app.py
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: GRADIO_SERVER_NAME
-        value: "0.0.0.0"
-      - key: GRADIO_SERVER_PORT
-        value: "10000"
+      - key: PORT
+        value: 7860
+      - key: GRADIO_ANALYTICS_ENABLED
+        value: "False"
+      - key: HF_HOME
+        value: /opt/render/project/src/.cache/huggingface
+      - key: TRANSFORMERS_CACHE
+        value: /opt/render/project/src/.cache/huggingface
+      - key: TORCH_HOME
+        value: /opt/render/project/src/.cache/torch
+    autoDeploy: true
