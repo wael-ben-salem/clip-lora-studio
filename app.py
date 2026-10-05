@@ -1,11 +1,6 @@
 """
 🎨 CLIP LoRA Studio — Application Gradio
 Étude du fine-tuning de CLIP avec LoRA sur Fashion-MNIST.
-
-Nouveautés UI :
-  - page d'accueil au lancement (hero, KPI, accès rapides, graphiques, essai rapide)
-  - menu latéral moderne qui pilote les onglets (onglets natifs masqués)
-  - bouton clair / sombre
 """
 
 import logging
@@ -44,7 +39,7 @@ from ui_theme import (
 )
 
 # =============================================================================
-# LOGGING STRUCTURÉ
+# FIX (Bug 3) — LOGGING STRUCTURÉ
 # Format : 2026-10-04 19:30:00 | ERROR | modules.retrieval | ...
 # =============================================================================
 LOGS_DIR = Path("logs")
@@ -55,9 +50,11 @@ _fmt = logging.Formatter(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+# Console handler
 _ch = logging.StreamHandler()
 _ch.setFormatter(_fmt)
 
+# Rotating file handler (5 MB × 3 backups)
 _fh = logging.handlers.RotatingFileHandler(
     LOGS_DIR / "app.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
 )
@@ -117,7 +114,16 @@ EXPORTS_DIR.mkdir(exist_ok=True)
 
 
 def _export_dataframe(df: pd.DataFrame, prefix: str = "export") -> str:
-    """Sauvegarde un DataFrame en CSV dans exports/ et retourne le chemin (ou None)."""
+    """
+    Sauvegarde un DataFrame en CSV dans exports/ et retourne le chemin.
+
+    Args:
+        df : DataFrame à exporter
+        prefix : préfixe du nom de fichier
+
+    Returns:
+        Chemin du fichier CSV créé (str), ou None si df est vide.
+    """
     if df is None or df.empty:
         return None
 
@@ -158,15 +164,16 @@ def _export_markdown_summary(text: str, prefix: str = "summary") -> str:
 
 # =============================================================================
 # INITIALISATION (au démarrage de l'app)
+# FIX (Bug 3): Utilise logging structuré au lieu de print
 # =============================================================================
 logger.info("=" * 60)
 logger.info("INITIALISATION CLIP LoRA Studio")
 logger.info("=" * 60)
 
-registry = ModelRegistry().load_all()
+registry  = ModelRegistry().load_all()
 analytics = Analytics()
 
-# Retriever multi-modèle — charge tous les embeddings disponibles
+# FIX (Bug 1): Retriever multi-modèle — charge tous les embeddings disponibles
 try:
     retriever = ImageRetriever(
         embeddings_map=DEFAULT_EMBEDDINGS_MAP,
@@ -184,7 +191,7 @@ except Exception as exc:
 _n_figs = len(analytics.list_available_figures("team"))
 _n_data = len(analytics.list_available_data())
 _retriever_ok = retriever is not None
-_n_imgs = retriever.num_images if _retriever_ok else 0
+_n_imgs    = retriever.num_images if _retriever_ok else 0
 _emb_shape = (
     next(iter(retriever._embeddings.values())).shape
     if _retriever_ok and retriever._embeddings else "N/A"
@@ -220,6 +227,7 @@ if _unavail:
         logger.warning("Modèle non dispo : %s — %s", m, hint)
 logger.info("=" * 112)
 
+# FIX (Bug 3): Log le schéma de la table analytique
 try:
     if not analytics.team_table.empty:
         logger.info("team_table columns : %s", list(analytics.team_table.columns))
@@ -238,13 +246,14 @@ Projet académique — étude du trade-off **adaptation ↔ préservation de la 
 """
 
 COLORS = {
-    "Zero-shot": "#4A90E2",
-    "A2 LoRA V+T": "#50C878",
-    "B LoRA V only": "#F5A623",
+    "Zero-shot":      "#4A90E2",
+    "A2 LoRA V+T":    "#50C878",
+    "B LoRA V only":  "#F5A623",
 }
 
-CANONICAL_MODELS = ["Zero-shot", "A1 LinearHead", "A2 LoRA V+T", "B LoRA V only"]
 
+
+CANONICAL_MODELS = ["Zero-shot", "A1 LinearHead", "A2 LoRA V+T", "B LoRA V only"]
 
 # =============================================================================
 # ONGLET 1 — CLASSIFICATION
@@ -366,8 +375,10 @@ def tab_prompt_lab():
 
 # =============================================================================
 # ONGLET 3 — IMAGE RETRIEVAL
+# FIX (Bug 1): multi-model cohérent, class filter, metric choice
 # =============================================================================
 def tab_retrieval():
+    # FIX (Bug 1): Déterminer quels modèles ont des embeddings disponibles
     avail = retriever.available_models if retriever else []
     default_model = avail[0] if avail else "Zero-shot"
     unavail_hints = retriever.get_unavailable_models() if retriever else {}
@@ -411,8 +422,15 @@ def tab_retrieval():
 
     with gr.Row():
         with gr.Column(scale=1):
-            img_input = gr.Image(type="pil", label="📷 Image requête", height=280)
-            k_slider = gr.Slider(3, 24, value=12, step=3, label="Top-K (nombre d'images)")
+            img_input = gr.Image(
+                type="pil",
+                label="📷 Image requête",
+                height=280,
+            )
+            k_slider = gr.Slider(
+                3, 24, value=12, step=3,
+                label="Top-K (nombre d'images)",
+            )
             model_dd = gr.Dropdown(
                 avail,
                 value=default_model,
@@ -437,11 +455,19 @@ def tab_retrieval():
         with gr.Column(scale=2):
             gallery = gr.Gallery(
                 label="📸 Images similaires trouvées",
-                columns=4, rows=3, height=480, object_fit="cover", show_label=True,
+                columns=4,
+                rows=3,
+                height=480,
+                object_fit="cover",
+                show_label=True,
             )
             dist_plot = gr.BarPlot(
-                x="Class", y="Count", title="Distribution des classes trouvées",
-                y_lim=[0, 24], height=280, sort="y",
+                x="Class",
+                y="Count",
+                title="Distribution des classes trouvées",
+                y_lim=[0, 24],
+                height=280,
+                sort="y",
             )
             stats_md = gr.Markdown()
 
@@ -454,6 +480,7 @@ def tab_retrieval():
             return None, None, "⚠️ Aucun modèle sélectionné."
 
         try:
+            # Encoder avec le même modèle que les embeddings sélectionnés.
             encode_model = model_name if model_name in registry.names else "Zero-shot"
             emb = get_image_embedding(registry, encode_model, image).cpu().numpy()
 
@@ -519,7 +546,10 @@ def tab_retrieval():
         inputs=[img_input, k_slider, model_dd, class_filter_dd, metric_dd],
         outputs=[gallery, dist_plot, stats_md],
     )
-    btn_clear.click(_clear, outputs=[img_input, gallery, dist_plot, stats_md])
+    btn_clear.click(
+        _clear,
+        outputs=[img_input, gallery, dist_plot, stats_md],
+    )
 
     example_files = sorted(EXAMPLES_DIR.glob("*.png"))[:8]
     if example_files:
@@ -558,11 +588,21 @@ def tab_drift_explorer():
     except KeyError:
         col_class = df_delta.columns[0]
 
-    col_delta = _pick_col_or_none(df_delta, "delta_a2_b", "delta_A2_B", "deltaA2B")
-    col_acc_a2 = _pick_col_or_none(df_delta, "acc_a2", "acc_A2", "accuracy_a2")
-    col_acc_zs = _pick_col_or_none(df_delta, "acc_zs", "acc_ZS", "accuracy_zs", "acc_zeroshot")
-    col_acc_b = _pick_col_or_none(df_delta, "acc_b", "acc_B", "accuracy_b")
-    col_delta_zs = _pick_col_or_none(df_delta, "delta_a2_zs", "delta_A2_ZS", "deltaA2ZS")
+    col_delta = _pick_col_or_none(
+        df_delta, "delta_a2_b", "delta_A2_B", "deltaA2B"
+    )
+    col_acc_a2 = _pick_col_or_none(
+        df_delta, "acc_a2", "acc_A2", "accuracy_a2"
+    )
+    col_acc_zs = _pick_col_or_none(
+        df_delta, "acc_zs", "acc_ZS", "accuracy_zs", "acc_zeroshot"
+    )
+    col_acc_b = _pick_col_or_none(
+        df_delta, "acc_b", "acc_B", "accuracy_b"
+    )
+    col_delta_zs = _pick_col_or_none(
+        df_delta, "delta_a2_zs", "delta_A2_ZS", "deltaA2ZS"
+    )
 
     with gr.Row():
         if col_delta is not None:
@@ -581,7 +621,10 @@ def tab_drift_explorer():
             ({worst_class_row[col_delta] * 100:+.2f} pts)
             """)
         else:
-            gr.Markdown("### 📊 Points clés\n⚠️ Colonne delta_a2_b introuvable.")
+            gr.Markdown(
+                "### 📊 Points clés\n"
+                "⚠️ Colonne delta_a2_b introuvable."
+            )
 
     metric_choices = []
     for name, col in [
@@ -602,10 +645,16 @@ def tab_drift_explorer():
     default_metric = "acc_a2" if "acc_a2" in metric_choices else metric_choices[0]
 
     with gr.Row():
-        metric_dd = gr.Dropdown(choices=metric_choices, value=default_metric,
-                                label="📊 Métrique à afficher")
-        sort_dd = gr.Dropdown(choices=["Ordre classes", "Décroissant", "Croissant"],
-                              value="Ordre classes", label="🔃 Tri")
+        metric_dd = gr.Dropdown(
+            choices=metric_choices,
+            value=default_metric,
+            label="📊 Métrique à afficher",
+        )
+        sort_dd = gr.Dropdown(
+            choices=["Ordre classes", "Décroissant", "Croissant"],
+            value="Ordre classes",
+            label="🔃 Tri",
+        )
 
     plot = gr.Plot(label="📈 Graphique interactif")
 
@@ -622,8 +671,11 @@ def tab_drift_explorer():
 
         if col is None or col not in df_delta.columns:
             fig = go.Figure()
-            fig.add_annotation(text=f"Colonne '{metric}' introuvable",
-                               showarrow=False, font=dict(size=16))
+            fig.add_annotation(
+                text=f"Colonne '{metric}' introuvable",
+                showarrow=False,
+                font=dict(size=16),
+            )
             fig.update_layout(height=500)
             return fig
 
@@ -634,13 +686,20 @@ def tab_drift_explorer():
             df_plot = df_plot.sort_values(col, ascending=True)
 
         fig = px.bar(
-            df_plot, x=col_class, y=col, color=col,
+            df_plot,
+            x=col_class,
+            y=col,
+            color=col,
             color_continuous_scale="RdYlGn",
             title=f"{metric} par classe",
             labels={col_class: "Classe", col: metric},
             height=500,
         )
-        fig.update_layout(xaxis_tickangle=-45, plot_bgcolor="white", font=dict(size=12))
+        fig.update_layout(
+            xaxis_tickangle=-45,
+            plot_bgcolor="white",
+            font=dict(size=12),
+        )
         fig.update_traces(marker_line_color="black", marker_line_width=1)
         return fig
 
@@ -661,14 +720,24 @@ def tab_drift_explorer():
             ("B LoRA V only", col_acc_b, COLORS["B LoRA V only"]),
         ]:
             if col is not None:
-                fig.add_trace(go.Bar(
-                    name=model, x=df_delta[col_class], y=df_delta[col],
-                    marker_color=color, marker_line_color="black", marker_line_width=1,
-                ))
+                fig.add_trace(
+                    go.Bar(
+                        name=model,
+                        x=df_delta[col_class],
+                        y=df_delta[col],
+                        marker_color=color,
+                        marker_line_color="black",
+                        marker_line_width=1,
+                    )
+                )
 
         fig.update_layout(
-            barmode="group", height=500, xaxis_tickangle=-45,
-            plot_bgcolor="white", title="Accuracy par classe", yaxis_title="Accuracy",
+            barmode="group",
+            height=500,
+            xaxis_tickangle=-45,
+            plot_bgcolor="white",
+            title="Accuracy par classe",
+            yaxis_title="Accuracy",
         )
         return fig
 
@@ -691,17 +760,31 @@ def tab_analytics():
         return
 
     try:
-        col_model = _pick_col(tt, "Model", "model", "model_name", "name", "Modèle")
-        col_acc = _pick_col(tt, "ClsAcc", "acc", "cls_acc", "Cls_Acc",
-                            "Accuracy", "accuracy", "clsacc", "ClassAcc")
-        col_p1 = _pick_col(tt, "P1", "p1", "P@1", "Retrieval_P1",
-                           "recall@1", "Recall1", "retrieval_p1")
-        col_drift = _pick_col(tt, "Drift", "drift", "Drift_Angle", "drift_angle")
-        col_params = _pick_col(tt, "Params", "params", "n_params", "NumParams",
-                               "nb_params", "ParamCount")
+        col_model = _pick_col(
+            tt, "Model", "model", "model_name", "name", "Modèle"
+        )
+        col_acc = _pick_col(
+            tt, "ClsAcc", "acc", "cls_acc", "Cls_Acc",
+            "Accuracy", "accuracy", "clsacc", "ClassAcc"
+        )
+        col_p1 = _pick_col(
+            tt, "P1", "p1", "P@1", "Retrieval_P1",
+            "recall@1", "Recall1", "retrieval_p1"
+        )
+        col_drift = _pick_col(
+            tt, "Drift", "drift", "Drift_Angle", "drift_angle"
+        )
+        col_params = _pick_col(
+            tt, "Params", "params", "n_params", "NumParams",
+            "nb_params", "ParamCount"
+        )
     except KeyError as e:
         gr.Markdown(f"⚠️ Colonnes manquantes dans TEAM_FINAL_TABLE : {e}")
-        gr.Dataframe(value=tt, label="Données brutes (colonnes détectées)", interactive=False)
+        gr.Dataframe(
+            value=tt,
+            label="Données brutes (colonnes détectées)",
+            interactive=False,
+        )
         return
 
     with gr.Row():
@@ -748,17 +831,26 @@ def tab_analytics():
 
         with gr.Tab("🎯 Pareto"):
             fig = px.scatter(
-                tt, x=col_acc, y=col_p1, size=col_params, color=col_drift,
-                hover_name=col_model, text=col_model,
+                tt,
+                x=col_acc,
+                y=col_p1,
+                size=col_params,
+                color=col_drift,
+                hover_name=col_model,
+                text=col_model,
                 color_continuous_scale="RdYlGn_r",
                 title="Trade-off Accuracy ↔ Retrieval (taille = params)",
                 height=500,
             )
-            fig.update_traces(marker=dict(line=dict(width=2, color="black")),
-                              textposition="top center")
-            fig.update_layout(xaxis_title="Classification Accuracy →",
-                              yaxis_title="Text→Image P@1 →",
-                              plot_bgcolor="white")
+            fig.update_traces(
+                marker=dict(line=dict(width=2, color="black")),
+                textposition="top center",
+            )
+            fig.update_layout(
+                xaxis_title="Classification Accuracy →",
+                yaxis_title="Text→Image P@1 →",
+                plot_bgcolor="white",
+            )
             gr.Plot(value=fig)
 
     gr.Markdown("### 📸 Slide de conclusion")
@@ -773,7 +865,10 @@ def tab_analytics():
         acc_a2 = tt.loc[tt[col_model] == "A2 LoRA V+T", col_acc].values
         if len(acc_zs) and len(acc_a2):
             delta_pts = (acc_a2[0] - acc_zs[0]) * 100
-            insight_line = f"- ✅ LoRA V+T : {delta_pts:+.1f}% accuracy vs Zero-shot"
+            insight_line = (
+                f"- ✅ LoRA V+T : {delta_pts:+.1f}% accuracy "
+                f"vs Zero-shot"
+            )
         else:
             insight_line = "- ✅ LoRA V+T : comparaison ZS/A2 indisponible"
     except Exception:
@@ -788,6 +883,7 @@ def tab_analytics():
 
     ⚡ A1 LinearHead : efficace à budget ultra-réduit (5K params)
     """)
+
 
 
 # =============================================================================
@@ -806,8 +902,15 @@ def tab_comparator():
 
     with gr.Row():
         with gr.Column(scale=1):
-            img_input = gr.Image(type="pil", label="📷 Image à comparer", height=320)
-            btn_compare = gr.Button("🔬 Comparer les 4 modèles", variant="primary")
+            img_input = gr.Image(
+                type="pil",
+                label="📷 Image à comparer",
+                height=320,
+            )
+            btn_compare = gr.Button(
+                "🔬 Comparer les 4 modèles",
+                variant="primary",
+            )
             btn_clear = gr.Button("🗑️ Effacer", size="sm")
 
             gr.Markdown("""
@@ -825,35 +928,64 @@ def tab_comparator():
 
             with gr.Row():
                 with gr.Column():
-                    gr.Markdown(f"#### 🧊 {model_names[0] if len(model_names) > 0 else 'Zero-shot'}")
-                    out0_label = gr.Label(label="Prédiction", num_top_classes=3)
+                    gr.Markdown(
+                        f"#### 🧊 {model_names[0] if len(model_names) > 0 else 'Zero-shot'}"
+                    )
+                    out0_label = gr.Label(
+                        label="Prédiction",
+                        num_top_classes=3,
+                    )
                     out0_md = gr.Markdown()
 
                 with gr.Column():
-                    gr.Markdown(f"#### 🔷 {model_names[1] if len(model_names) > 1 else 'A1 LinearHead'}")
-                    out1_label = gr.Label(label="Prédiction", num_top_classes=3)
+                    gr.Markdown(
+                        f"#### 🔷 {model_names[1] if len(model_names) > 1 else 'A1 LinearHead'}"
+                    )
+                    out1_label = gr.Label(
+                        label="Prédiction",
+                        num_top_classes=3,
+                    )
                     out1_md = gr.Markdown()
 
             with gr.Row():
                 with gr.Column():
-                    gr.Markdown(f"#### 🟢 {model_names[2] if len(model_names) > 2 else 'A2 LoRA V+T'}")
-                    out2_label = gr.Label(label="Prédiction", num_top_classes=3)
+                    gr.Markdown(
+                        f"#### 🟢 {model_names[2] if len(model_names) > 2 else 'A2 LoRA V+T'}"
+                    )
+                    out2_label = gr.Label(
+                        label="Prédiction",
+                        num_top_classes=3,
+                    )
                     out2_md = gr.Markdown()
 
                 with gr.Column():
-                    gr.Markdown(f"#### 🟠 {model_names[3] if len(model_names) > 3 else 'B LoRA V only'}")
-                    out3_label = gr.Label(label="Prédiction", num_top_classes=3)
+                    gr.Markdown(
+                        f"#### 🟠 {model_names[3] if len(model_names) > 3 else 'B LoRA V only'}"
+                    )
+                    out3_label = gr.Label(
+                        label="Prédiction",
+                        num_top_classes=3,
+                    )
                     out3_md = gr.Markdown()
 
             gr.Markdown("### 📋 Tableau récapitulatif")
             summary_df = gr.Dataframe(
-                headers=["Modèle", "Prédiction", "Confiance", "Top-2", "Top-2 Conf"],
+                headers=[
+                    "Modèle",
+                    "Prédiction",
+                    "Confiance",
+                    "Top-2",
+                    "Top-2 Conf",
+                ],
                 label="Comparaison",
                 interactive=False,
             )
 
             with gr.Row():
-                btn_export_cmp = gr.Button("📥 Exporter en CSV", size="sm")
+                btn_export_cmp = gr.Button(
+                    "📥 Exporter en CSV",
+                    size="sm",
+                )
                 export_cmp_md = gr.Markdown()
 
     last_summary = gr.State(value=None)
@@ -862,23 +994,43 @@ def tab_comparator():
         if summary_data is None:
             return "⚠️ Lancez d'abord une comparaison."
 
-        path = _export_dataframe(pd.DataFrame(summary_data), prefix="comparison")
+        path = _export_dataframe(
+            pd.DataFrame(summary_data),
+            prefix="comparison",
+        )
         if path:
             return f"✅ Exporté : `{path}`"
         return "❌ Échec de l'export."
 
-    btn_export_cmp.click(_export_comparison, inputs=[last_summary], outputs=[export_cmp_md])
+    btn_export_cmp.click(
+        _export_comparison,
+        inputs=[last_summary],
+        outputs=[export_cmp_md],
+    )
 
     def _compare(image):
         """Classifie l'image avec les 4 modèles et compare."""
         empty_df = pd.DataFrame(
-            columns=["Modèle", "Prédiction", "Confiance", "Top-2", "Top-2 Conf"]
+            columns=[
+                "Modèle",
+                "Prédiction",
+                "Confiance",
+                "Top-2",
+                "Top-2 Conf",
+            ]
         )
 
         if image is None:
             return (
                 "⚠️ Uploadez une image.",
-                None, "", None, "", None, "", None, "",
+                None,
+                "",
+                None,
+                "",
+                None,
+                "",
+                None,
+                "",
                 empty_df,
                 None,
             )
@@ -887,11 +1039,24 @@ def tab_comparator():
 
         for name in model_names[:4]:
             try:
-                top_dict, df = classify(registry, image, model_name=name, top_k=3)
+                top_dict, df = classify(
+                    registry,
+                    image,
+                    model_name=name,
+                    top_k=3,
+                )
                 top_class = list(top_dict.keys())[0]
                 top_conf = list(top_dict.values())[0]
-                top2_class = list(top_dict.keys())[1] if len(top_dict) > 1 else "—"
-                top2_conf = list(top_dict.values())[1] if len(top_dict) > 1 else 0.0
+                top2_class = (
+                    list(top_dict.keys())[1]
+                    if len(top_dict) > 1
+                    else "—"
+                )
+                top2_conf = (
+                    list(top_dict.values())[1]
+                    if len(top_dict) > 1
+                    else 0.0
+                )
 
                 results.append({
                     "model": name,
@@ -903,7 +1068,11 @@ def tab_comparator():
                 })
 
             except Exception as e:
-                logger.error("Erreur comparaison %s : %s", name, e)
+                logger.error(
+                    "Erreur comparaison %s : %s",
+                    name,
+                    e,
+                )
                 results.append({
                     "model": name,
                     "top_dict": {},
@@ -943,7 +1112,9 @@ def tab_comparator():
             lines = []
             for cls, prob in list(r["top_dict"].items())[:3]:
                 bar = "█" * int(prob * 20)
-                lines.append(f"`{cls:<12}` {bar} {prob * 100:.1f}%")
+                lines.append(
+                    f"`{cls:<12}` {bar} {prob * 100:.1f}%"
+                )
 
             return "```\n" + "\n".join(lines) + "\n```"
 
@@ -961,29 +1132,48 @@ def tab_comparator():
         labels = [r["top_dict"] for r in results]
         mds = [model_md(r) for r in results]
 
-        # Garantit toujours 4 sorties de modèles
+        # Garantit toujours 4 sorties de modèles, même si registry.names
+        # contient moins de 4 modèles.
         while len(labels) < 4:
             labels.append({})
             mds.append("❌ Modèle indisponible")
 
         return (
             consensus,
-            labels[0], mds[0],
-            labels[1], mds[1],
-            labels[2], mds[2],
-            labels[3], mds[3],
+            labels[0],
+            mds[0],
+            labels[1],
+            mds[1],
+            labels[2],
+            mds[2],
+            labels[3],
+            mds[3],
             summary,
             summary.to_dict("records"),
         )
 
     def _clear():
         empty_df = pd.DataFrame(
-            columns=["Modèle", "Prédiction", "Confiance", "Top-2", "Top-2 Conf"]
+            columns=[
+                "Modèle",
+                "Prédiction",
+                "Confiance",
+                "Top-2",
+                "Top-2 Conf",
+            ]
         )
+
         return (
             None,
             "Uploadez une image pour comparer.",
-            None, "", None, "", None, "", None, "",
+            None,
+            "",
+            None,
+            "",
+            None,
+            "",
+            None,
+            "",
             empty_df,
             None,
         )
@@ -993,10 +1183,14 @@ def tab_comparator():
         inputs=[img_input],
         outputs=[
             consensus_md,
-            out0_label, out0_md,
-            out1_label, out1_md,
-            out2_label, out2_md,
-            out3_label, out3_md,
+            out0_label,
+            out0_md,
+            out1_label,
+            out1_md,
+            out2_label,
+            out2_md,
+            out3_label,
+            out3_md,
             summary_df,
             last_summary,
         ],
@@ -1007,10 +1201,14 @@ def tab_comparator():
         outputs=[
             img_input,
             consensus_md,
-            out0_label, out0_md,
-            out1_label, out1_md,
-            out2_label, out2_md,
-            out3_label, out3_md,
+            out0_label,
+            out0_md,
+            out1_label,
+            out1_md,
+            out2_label,
+            out2_md,
+            out3_label,
+            out3_md,
             summary_df,
             last_summary,
         ],
@@ -1070,9 +1268,15 @@ def tab_calibration():
             - **ECE > 0.10** : sur/sous-confiant ⚠️
             """)
 
-            fig_cal = analytics.get_figure("team_calibration_reliability.png", "team")
+            fig_cal = analytics.get_figure(
+                "team_calibration_reliability.png",
+                "team",
+            )
             if fig_cal:
-                gr.Image(value=fig_cal, label="Reliability Diagram")
+                gr.Image(
+                    value=fig_cal,
+                    label="Reliability Diagram",
+                )
             else:
                 gr.Markdown("⚠️ Figure de calibration non trouvée.")
 
@@ -1084,15 +1288,25 @@ def tab_calibration():
             Un modèle sur-confiant a un pic vers 1.0.
             """)
 
-            fig_conf = analytics.get_figure("team_confidence_distribution.png", "team")
+            fig_conf = analytics.get_figure(
+                "team_confidence_distribution.png",
+                "team",
+            )
             if fig_conf:
-                gr.Image(value=fig_conf, label="Distribution des confiances")
+                gr.Image(
+                    value=fig_conf,
+                    label="Distribution des confiances",
+                )
             else:
                 gr.Markdown("⚠️ Distribution non trouvée.")
 
     if df_cal is not None and not df_cal.empty:
         gr.Markdown("### 📋 Données de calibration")
-        gr.Dataframe(value=df_cal, label="Calibration", interactive=False)
+        gr.Dataframe(
+            value=df_cal,
+            label="Calibration",
+            interactive=False,
+        )
     else:
         gr.Markdown(
             "### 📋 Données de calibration\n"
@@ -1123,13 +1337,20 @@ def tab_calibration():
     """)
 
     with gr.Row():
-        img_input = gr.Image(type="pil", label="📷 Image à tester", height=250)
+        img_input = gr.Image(
+            type="pil",
+            label="📷 Image à tester",
+            height=250,
+        )
         model_dd = gr.Dropdown(
             choices=registry.names,
             value=registry.names[0] if registry.names else "Zero-shot",
             label="🧠 Modèle",
         )
-        btn_test = gr.Button("🔍 Analyser la confiance", variant="primary")
+        btn_test = gr.Button(
+            "🔍 Analyser la confiance",
+            variant="primary",
+        )
 
     calib_out_md = gr.Markdown()
 
@@ -1138,14 +1359,27 @@ def tab_calibration():
             return "⚠️ Uploadez une image."
 
         try:
-            top_dict, df = classify(registry, image, model_name=model_name, top_k=3)
+            top_dict, df = classify(
+                registry,
+                image,
+                model_name=model_name,
+                top_k=3,
+            )
         except Exception as e:
-            logger.error("Calibration analyse erreur : %s", e, exc_info=True)
+            logger.error(
+                "Calibration analyse erreur : %s",
+                e,
+                exc_info=True,
+            )
             return f"❌ Erreur : {e}"
 
         top_class = list(top_dict.keys())[0]
         top_conf = list(top_dict.values())[0]
-        second_conf = list(top_dict.values())[1] if len(top_dict) > 1 else 0.0
+        second_conf = (
+            list(top_dict.values())[1]
+            if len(top_dict) > 1
+            else 0.0
+        )
 
         if top_conf > 0.9:
             verdict = "🔴 **Très confiant** — vérifier si justifié"
@@ -1171,7 +1405,11 @@ def tab_calibration():
         **Interprétation** : {verdict}
         """
 
-    btn_test.click(_analyze, [img_input, model_dd], calib_out_md)
+    btn_test.click(
+        _analyze,
+        [img_input, model_dd],
+        calib_out_md,
+    )
 
 
 # =============================================================================
@@ -1202,7 +1440,10 @@ def tab_playground():
                 value="Tous les modèles",
                 label="🧠 Modèle(s) à utiliser",
             )
-            btn_run = gr.Button("🚀 Analyser le batch", variant="primary")
+            btn_run = gr.Button(
+                "🚀 Analyser le batch",
+                variant="primary",
+            )
             btn_clear = gr.Button("🗑️ Effacer", size="sm")
 
             gr.Markdown("""
@@ -1219,9 +1460,16 @@ def tab_playground():
             summary_md = gr.Markdown()
 
             gr.Markdown("### 📋 Résultats détaillés")
-            results_df = gr.Dataframe(label="Prédictions", interactive=False, wrap=True)
+            results_df = gr.Dataframe(
+                label="Prédictions",
+                interactive=False,
+                wrap=True,
+            )
 
-            csv_file = gr.File(label="📥 Télécharger le CSV", visible=False)
+            csv_file = gr.File(
+                label="📥 Télécharger le CSV",
+                visible=False,
+            )
 
             gr.Markdown("### 📊 Statistiques agrégées")
             stats_md = gr.Markdown()
@@ -1231,7 +1479,13 @@ def tab_playground():
         empty_df = pd.DataFrame()
 
         if not files:
-            return "⚠️ Uploadez au moins une image.", "", empty_df, None, ""
+            return (
+                "⚠️ Uploadez au moins une image.",
+                "",
+                empty_df,
+                None,
+                "",
+            )
 
         if model_choice == "Tous les modèles":
             models = list(registry.names)
@@ -1246,16 +1500,17 @@ def tab_playground():
         progress_lines = []
 
         for i, f in enumerate(files):
-            file_name = getattr(f, "name", None)
-            if file_name:
-                fname = Path(file_name).name
-            else:
-                fname = f"image_{i}"
+            file_name = getattr(f, "name", None) or str(f)
+            fname = Path(file_name).name if file_name else f"image_{i}"
 
             try:
                 img = Image.open(file_name).convert("RGB")
             except Exception as e:
-                logger.warning("Impossible de lire %s : %s", fname, e)
+                logger.warning(
+                    "Impossible de lire %s : %s",
+                    fname,
+                    e,
+                )
                 rows.append({
                     "Image": fname,
                     "Modèle": "—",
@@ -1263,12 +1518,19 @@ def tab_playground():
                     "Confiance": 0.0,
                 })
                 n_err += 1
-                progress_lines.append(f"❌ {i + 1}/{len(files)} — {fname}")
+                progress_lines.append(
+                    f"❌ {i + 1}/{len(files)} — {fname}"
+                )
                 continue
 
             for model_name in models:
                 try:
-                    top_dict, _ = classify(registry, img, model_name=model_name, top_k=1)
+                    top_dict, _ = classify(
+                        registry,
+                        img,
+                        model_name=model_name,
+                        top_k=1,
+                    )
                     top_class = list(top_dict.keys())[0]
                     top_conf = list(top_dict.values())[0]
 
@@ -1281,7 +1543,13 @@ def tab_playground():
                     n_ok += 1
 
                 except Exception as e:
-                    logger.error("Erreur %s sur %s : %s", model_name, fname, e, exc_info=True)
+                    logger.error(
+                        "Erreur %s sur %s : %s",
+                        model_name,
+                        fname,
+                        e,
+                        exc_info=True,
+                    )
                     rows.append({
                         "Image": fname,
                         "Modèle": model_name,
@@ -1290,22 +1558,37 @@ def tab_playground():
                     })
                     n_err += 1
 
-            progress_lines.append(f"✅ {i + 1}/{len(files)} — {fname}")
+            progress_lines.append(
+                f"✅ {i + 1}/{len(files)} — {fname}"
+            )
 
         df = pd.DataFrame(rows)
 
         if df.empty:
-            return "⚠️ Aucun résultat.", "", empty_df, None, ""
+            return (
+                "⚠️ Aucun résultat.",
+                "",
+                empty_df,
+                None,
+                "",
+            )
 
         stats_lines = ["### 📊 Stats par modèle\n"]
-        stats_lines.append("| Modèle | Images traitées | Confiance moyenne |")
-        stats_lines.append("|--------|-----------------|-------------------|")
+        stats_lines.append(
+            "| Modèle | Images traitées | Confiance moyenne |"
+        )
+        stats_lines.append(
+            "|--------|-----------------|-------------------|"
+        )
 
         for model_name in models:
             sub = df[df["Modèle"] == model_name]
             if not sub.empty:
                 mean_conf = sub["Confiance"].mean()
-                stats_lines.append(f"| {model_name} | {len(sub)} | {mean_conf * 100:.1f}% |")
+                stats_lines.append(
+                    f"| {model_name} | {len(sub)} | "
+                    f"{mean_conf * 100:.1f}% |"
+                )
 
         stats_md_str = "\n".join(stats_lines)
 
@@ -1318,7 +1601,10 @@ def tab_playground():
         - **Modèles utilisés** : {', '.join(models)}
         """
 
-        csv_path = _export_dataframe(df, prefix="playground")
+        csv_path = _export_dataframe(
+            df,
+            prefix="playground",
+        )
         if csv_path is None:
             csv_path = ""
 
@@ -1331,17 +1617,37 @@ def tab_playground():
         )
 
     def _clear():
-        return None, "*En attente...*", "", pd.DataFrame(), None, ""
+        return (
+            None,
+            "*En attente...*",
+            "",
+            pd.DataFrame(),
+            None,
+            "",
+        )
 
     btn_run.click(
         _process_batch,
         inputs=[images_input, model_choice],
-        outputs=[progress, summary_md, results_df, csv_file, stats_md],
+        outputs=[
+            progress,
+            summary_md,
+            results_df,
+            csv_file,
+            stats_md,
+        ],
     )
 
     btn_clear.click(
         _clear,
-        outputs=[images_input, progress, summary_md, results_df, csv_file, stats_md],
+        outputs=[
+            images_input,
+            progress,
+            summary_md,
+            results_df,
+            csv_file,
+            stats_md,
+        ],
     )
 
 
@@ -1390,7 +1696,15 @@ def tab_cross_modal():
                 placeholder="a black sneaker",
                 lines=2,
             )
-            k_slider = gr.Slider(3, 24, value=12, step=3, label="Top-K images")
+
+            k_slider = gr.Slider(
+                3,
+                24,
+                value=12,
+                step=3,
+                label="Top-K images",
+            )
+
             model_dd = gr.Dropdown(
                 choices=avail,
                 value=default_model,
@@ -1399,8 +1713,15 @@ def tab_cross_modal():
             )
 
             with gr.Row():
-                btn_search = gr.Button("🔍 Rechercher", variant="primary", scale=2)
-                btn_clear = gr.Button("🗑️ Effacer", scale=1)
+                btn_search = gr.Button(
+                    "🔍 Rechercher",
+                    variant="primary",
+                    scale=2,
+                )
+                btn_clear = gr.Button(
+                    "🗑️ Effacer",
+                    scale=1,
+                )
 
             gr.Markdown("""
             **💡 Astuce** : CLIP est entraîné sur des descriptions
@@ -1410,12 +1731,22 @@ def tab_cross_modal():
         with gr.Column(scale=2):
             gallery = gr.Gallery(
                 label="📸 Images trouvées",
-                columns=4, rows=3, height=480, object_fit="cover", show_label=True,
+                columns=4,
+                rows=3,
+                height=480,
+                object_fit="cover",
+                show_label=True,
             )
+
             dist_plot = gr.BarPlot(
-                x="Class", y="Count", title="Distribution des classes trouvées",
-                y_lim=[0, 24], height=280, sort="y",
+                x="Class",
+                y="Count",
+                title="Distribution des classes trouvées",
+                y_lim=[0, 24],
+                height=280,
+                sort="y",
             )
+
             stats_md = gr.Markdown()
 
     def _search_text(query_text, k, model_name):
@@ -1429,7 +1760,9 @@ def tab_cross_modal():
             from modules.inference import get_text_embeddings
 
             txt_emb = get_text_embeddings(
-                registry, "Zero-shot", [query_text.strip()],
+                registry,
+                "Zero-shot",
+                [query_text.strip()],
             ).cpu().numpy()
 
             results = retriever.retrieve(
@@ -1441,18 +1774,35 @@ def tab_cross_modal():
             )
 
         except ValueError as exc:
-            logger.warning("Cross-modal retrieval erreur : %s", exc)
+            logger.warning(
+                "Cross-modal retrieval erreur : %s",
+                exc,
+            )
             return None, None, f"⚠️ {exc}"
 
         except Exception as exc:
-            logger.error("Cross-modal inattendu : %s", exc, exc_info=True)
+            logger.error(
+                "Cross-modal inattendu : %s",
+                exc,
+                exc_info=True,
+            )
             return None, None, f"❌ Erreur : {exc}"
 
         if not results:
-            return [], pd.DataFrame({"Class": [], "Count": []}), "Aucun résultat."
+            return (
+                [],
+                pd.DataFrame({
+                    "Class": [],
+                    "Count": [],
+                }),
+                "Aucun résultat.",
+            )
 
         gallery_items = [
-            (r["image"], f"{r['class']} | {r['score']:.3f}")
+            (
+                r["image"],
+                f"{r['class']} | {r['score']:.3f}",
+            )
             for r in results
             if "image" in r
         ]
@@ -1462,11 +1812,18 @@ def tab_cross_modal():
         df_dist = pd.DataFrame({
             "Class": list(dist.keys()),
             "Count": list(dist.values()),
-        }).sort_values("Count", ascending=False)
+        }).sort_values(
+            "Count",
+            ascending=False,
+        )
 
         top_result = results[0]
 
-        dist_sorted = sorted(dist.items(), key=lambda x: x[1], reverse=True)
+        dist_sorted = sorted(
+            dist.items(),
+            key=lambda x: x[1],
+            reverse=True,
+        )
 
         top3_lines = "\n".join(
             f"- **{cls}** : {count} images"
@@ -1501,7 +1858,15 @@ def tab_cross_modal():
         outputs=[gallery, dist_plot, stats_md],
     )
 
-    btn_clear.click(_clear, outputs=[text_input, gallery, dist_plot, stats_md])
+    btn_clear.click(
+        _clear,
+        outputs=[
+            text_input,
+            gallery,
+            dist_plot,
+            stats_md,
+        ],
+    )
 
     gr.Examples(
         examples=[
@@ -1537,7 +1902,10 @@ def tab_exports():
 
     with gr.Row():
         with gr.Column():
-            refresh_btn = gr.Button("🔄 Rafraîchir la liste", variant="secondary")
+            refresh_btn = gr.Button(
+                "🔄 Rafraîchir la liste",
+                variant="secondary",
+            )
             export_paths_md = gr.Markdown()
 
         with gr.Column():
@@ -1550,7 +1918,10 @@ def tab_exports():
     with gr.Row():
         with gr.Column():
             gr.Markdown("### 📊 Exporter les données Analytics")
-            btn_export_team = gr.Button("📥 Exporter TEAM_FINAL_TABLE en CSV", variant="primary")
+            btn_export_team = gr.Button(
+                "📥 Exporter TEAM_FINAL_TABLE en CSV",
+                variant="primary",
+            )
             export_status_md = gr.Markdown()
 
     def _refresh():
@@ -1567,7 +1938,9 @@ def tab_exports():
 
         for f in files[:20]:
             size_kb = f.stat().st_size / 1024
-            lines.append(f"- `{f.name}` — {size_kb:.1f} KB")
+            lines.append(
+                f"- `{f.name}` — {size_kb:.1f} KB"
+            )
 
         return [str(f) for f in files], "\n".join(lines)
 
@@ -1577,219 +1950,32 @@ def tab_exports():
         if tt.empty:
             return "⚠️ Aucune donnée à exporter."
 
-        path = _export_dataframe(tt, prefix="team_final_table")
+        path = _export_dataframe(
+            tt,
+            prefix="team_final_table",
+        )
 
         if path:
             return f"✅ Exporté : `{path}`"
 
         return "❌ Échec de l'export."
 
-    refresh_btn.click(_refresh, outputs=[file_list, export_paths_md])
-    btn_export_team.click(_export_team_table, outputs=[export_status_md])
+    refresh_btn.click(
+        _refresh,
+        outputs=[file_list, export_paths_md],
+    )
+
+    btn_export_team.click(
+        _export_team_table,
+        outputs=[export_status_md],
+    )
 
     initial_files, initial_md = _refresh()
     file_list.value = initial_files
     export_paths_md.value = initial_md
 
-
 # =============================================================================
-# ONGLET 11 — GUIDE DE DÉMO (pour soutenance)
-# =============================================================================
-def tab_guide():
-    """Guide pas à pas pour la démonstration de soutenance."""
-    gr.Markdown("""
-    ### 📖 Guide de Démonstration — Soutenance
-
-    Ce guide vous accompagne pour une **démo fluide de 5 minutes** devant le jury.
-    """)
-
-    with gr.Tabs():
-        with gr.Tab("🎬 Parcours 5 minutes"):
-            gr.Markdown("""
-            ### 🎬 Parcours de démonstration (5 min)
-
-            **Ordre recommandé pour la soutenance :**
-
-            | Temps | Onglet | Ce qu'on montre |
-            |-------|--------|-----------------|
-            | 0:00 – 0:30 | 🎯 **Classification** | Upload d'une image, top-5, distribution |
-            | 0:30 – 1:00 | 🎨 **Comparateur** | Les 4 modèles côte à côte + consensus |
-            | 1:00 – 1:30 | 🔤 **Prompt Lab** | Changer le template en direct |
-            | 1:30 – 2:15 | 🔍 **Retrieval** | Upload sneaker → top-12 cohérents |
-            | 2:15 – 2:45 | 🔎 **Cross-Modal** | Taper "a red dress" → images |
-            | 2:45 – 3:15 | 🧭 **Drift Explorer** | Impact du fine-tuning par classe |
-            | 3:15 – 3:45 | 📊 **Analytics** | Pareto, heatmap, slide |
-            | 3:45 – 4:15 | 🌡️ **Calibration** | Reliability diagram + simulateur |
-            | 4:15 – 4:45 | 🧪 **Playground** | Batch + export CSV |
-            | 4:45 – 5:00 | 🧠 **Insights** | Robustesse + oubli catastrophique |
-
-            **Phrases clés à dire :**
-            - *"J'ai 53 tests automatisés qui valident toute la chaîne."*
-            - *"Le retrieval atteint 88% d'accuracy@5."*
-            - *"LoRA V only fait 2× plus léger que A2 pour 98% des perfs."*
-            """)
-
-        with gr.Tab("💡 Points forts"):
-            gr.Markdown("""
-            ### 💡 Points forts du projet
-
-            **🔬 Scientifique :**
-            - Comparaison rigoureuse **4 modèles** (ZS / A1 / A2 / B)
-            - Mesure du **drift angulaire** après fine-tuning
-            - **Calibration** (ECE, reliability diagram)
-            - **Oubli catastrophique** (OOD transfer)
-            - **Multi-seed** pour la stabilité
-
-            **🛠️ Technique :**
-            - **53 tests automatisés** (couverture complète)
-            - **Logging structuré** avec rotation
-            - **Retriever multi-modèle** cohérent
-            - **Cross-modal** texte → images
-            - **Export CSV** sur 3 onglets
-
-            **🎨 UX :**
-            - **Page d'accueil** + **menu latéral** moderne
-            - **Thème pro** avec gradient + mode sombre
-            - **Badges de statut**
-            - **Guide de démo** intégré
-
-            **📊 Métriques clés à retenir :**
-            - Classification accuracy : **~85%** (A2)
-            - Retrieval P@1 : **~65%** (Zero-shot)
-            - Retrieval accuracy@5 : **88%**
-            - Drift minimal : B LoRA V only
-            - Params : A1 (5K) < B (~50K) < A2 (~100K)
-            """)
-
-        with gr.Tab("❓ Questions du jury"):
-            gr.Markdown("""
-            ### ❓ Questions probables du jury + réponses
-
-            **Q: Pourquoi LoRA et pas un fine-tuning complet ?**
-            > LoRA réduit drastiquement le nombre de paramètres entraînables
-            > (de ~150M à ~50-100K) tout en préservant les performances.
-            > C'est crucial pour un dataset limité comme Fashion-MNIST.
-
-            **Q: Comment expliquez-vous le trade-off adaptation/généralité ?**
-            > Le LoRA V+T (A2) obtient la meilleure accuracy mais augmente
-            > le drift. Le LoRA V only (B) préserve mieux la généralité OOD
-            > pour un coût 2× moindre.
-
-            **Q: Qu'est-ce que le drift angulaire ?**
-            > C'est la distance angulaire moyenne entre les embeddings
-            > avant et après fine-tuning. Il mesure à quel point l'encoder
-            > a été modifié.
-
-            **Q: Comment garantissez-vous la fiabilité ?**
-            > 53 tests automatisés couvrent : labels, embeddings,
-            > retrieval, classification, exports, cohérence.
-            > Chaque test passe en 40s sur CPU.
-
-            **Q: Pourquoi 88% accuracy@5 au retrieval ?**
-            > C'est le taux où au moins une des 5 premières images retournées
-            > partage la classe de la requête. Cela valide la qualité des
-            > embeddings CLIP.
-
-            **Q: Le modèle est-il calibré ?**
-            > Voir onglet 🌡️ Calibration. La distribution montre si les
-            > confiances sont fiables. Un bon modèle ne doit pas être
-            > systématiquement sur-confiant.
-            """)
-
-        with gr.Tab("🚀 Extensions futures"):
-            gr.Markdown("""
-            ### 🚀 Extensions futures proposées
-
-            **Court terme :**
-            - 🔥 Grad-CAM : visualiser les zones d'attention CLIP
-            - 📉 Courbes d'entraînement en direct
-            - 🎥 Mode webcam pour démo live
-
-            **Moyen terme :**
-            - 🌍 Autres datasets (CIFAR-10, Oxford Pets)
-            - 🧠 Autres backbones (ViT-L/14, SigLIP)
-            - ☁️ Déploiement HuggingFace Spaces
-            - 🐳 Dockerfile + CI/CD
-
-            **Long terme :**
-            - 🎯 Few-shot learning adaptatif
-            - 🔍 Recherche hybride texte+image
-            - 📱 Interface mobile (PWA)
-
-            **Pistes de recherche :**
-            - Comparaison LoRA vs DoRA vs AdaptFormer
-            - Analyse théorique du drift
-            - Curriculum learning sur Fashion-MNIST
-            """)
-
-        with gr.Tab("📋 Checklist soutenance"):
-            gr.Markdown("""
-            ### 📋 Checklist avant la soutenance
-
-            **⏰ 24h avant :**
-            - [ ] `pytest tests/ -v` → doit afficher **53 passed**
-            - [ ] `python app.py` → vérifier toutes les **sections du menu**
-            - [ ] Tester chaque onglet avec **une image de chaque classe**
-            - [ ] Prendre des **screenshots** de chaque onglet
-            - [ ] Préparer **2-3 images** d'exemple (sneaker, dress, coat)
-
-            **⏰ 1h avant :**
-            - [ ] Dossier `exports/` **vide** (pour montrer l'export en live)
-            - [ ] Dossier `logs/` prêt
-            - [ ] Navigateur ouvert sur http://localhost:7860
-            - [ ] Terminal ouvert avec `pytest` prêt à lancer
-            - [ ] Slides ouvertes en arrière-plan
-
-            **⏰ Pendant la démo :**
-            - [ ] Suivre le **Parcours 5 minutes**
-            - [ ] Montrer `pytest tests/ -v` (preuve de robustesse)
-            - [ ] Exporter un CSV pour montrer la traçabilité
-            - [ ] Rester calme sur les questions techniques
-
-            **⏰ Après :**
-            - [ ] Garder l'app ouverte pour les questions
-            - [ ] Avoir le README sous la main
-            - [ ] Noter les retours du jury
-            """)
-
-    gr.Markdown("### 📥 Exporter ce guide")
-    with gr.Row():
-        btn_export_guide = gr.Button("📥 Exporter le guide en Markdown", variant="secondary")
-        export_guide_md = gr.Markdown()
-
-    def _export_guide():
-        text = """# Guide de Démonstration — CLIP LoRA Studio
-
-## Parcours 5 minutes
-1. 🎯 Classification (30s)
-2. 🎨 Comparateur (30s)
-3. 🔤 Prompt Lab (30s)
-4. 🔍 Retrieval (45s)
-5. 🔎 Cross-Modal (30s)
-6. 🧭 Drift Explorer (30s)
-7. 📊 Analytics (30s)
-8. 🌡️ Calibration (30s)
-9. 🧪 Playground (30s)
-10. 🧠 Insights (15s)
-
-## Points forts
-- 11 onglets, 53 tests, 4 modèles
-- Accuracy 85%, P@1 65%, accuracy@5 88%
-- LoRA V only : 2× plus léger pour 98% des perfs
-
-## Extensions futures
-- Grad-CAM, datasets alternatifs, Docker, HF Spaces
-"""
-        path = _export_markdown_summary(text, prefix="guide_demo")
-        if path:
-            return f"✅ Exporté : `{path}`"
-        return "❌ Échec de l'export."
-
-    btn_export_guide.click(_export_guide, outputs=[export_guide_md])
-
-
-# =============================================================================
-# ONGLET — INSIGHTS
+# ONGLET 6 — INSIGHTS
 # =============================================================================
 def tab_insights():
     gr.Markdown("""
@@ -1818,7 +2004,9 @@ def tab_insights():
 
             Teste si CLIP a perdu sa généralité après fine-tuning.
             """)
-            fig_cat = analytics.get_figure("team_catastrophic_forgetting.png", "team")
+            fig_cat = analytics.get_figure(
+                "team_catastrophic_forgetting.png", "team"
+            )
             if fig_cat:
                 gr.Image(value=fig_cat, label="OOD Transfer")
 
@@ -1854,57 +2042,49 @@ def tab_insights():
 
             Mesure si les confiances sont fiables.
             """)
-            fig_cal = analytics.get_figure("team_calibration_reliability.png", "team")
+            fig_cal = analytics.get_figure(
+                "team_calibration_reliability.png", "team"
+            )
             if fig_cal:
                 gr.Image(value=fig_cal, label="Reliability Diagram")
-            fig_conf = analytics.get_figure("team_confidence_distribution.png", "team")
+            fig_conf = analytics.get_figure(
+                "team_confidence_distribution.png", "team"
+            )
             if fig_conf:
                 gr.Image(value=fig_conf, label="Distribution des confiances")
 
 
+
 # =============================================================================
-# KPI (chiffres clés de la page d'accueil)
+# KPI + PAGE D'ACCUEIL
 # =============================================================================
 def _collect_kpis():
-    """Chiffres clés affichés sur la page d'accueil.
-
-    1. Accuracy max · 2. Gain vs Zero-shot · 3. Meilleur compromis
-    4. Retrieval P@1 max · 5. Nombre de tests · 6. Images indexées
-    """
+    """Chiffres clés affichés sur la page d'accueil."""
     cards = []
-
     try:
+        if analytics is None:
+            raise ValueError("Analytics non disponible")
         tt_full = analytics.team_table
         col_model = _pick_col_or_none(tt_full, "Model", "model", "model_name", "name", "Modèle")
         col_acc = _pick_col_or_none(tt_full, "ClsAcc", "acc", "cls_acc", "Accuracy", "accuracy", "ClassAcc")
         col_p1 = _pick_col_or_none(tt_full, "P1", "p1", "P@1", "Retrieval_P1", "retrieval_p1")
         col_params = _pick_col_or_none(tt_full, "Params", "params", "n_params", "NumParams", "nb_params", "ParamCount")
-
         if col_model is not None:
             tt = tt_full[tt_full[col_model].isin(CANONICAL_MODELS)].copy()
         else:
             tt = tt_full.copy()
 
-        logger.info(
-            "KPI — modèles canoniques retenus : %s",
-            tt[col_model].tolist() if col_model else "N/A",
-        )
+        logger.info("KPI — modèles canoniques retenus : %s", tt[col_model].tolist() if col_model else "N/A")
 
         def _best(df, col, mode="max"):
             idx = df[col].idxmax() if mode == "max" else df[col].idxmin()
             return df.loc[idx, col], str(df.loc[idx, col_model])
 
-        # KPI 1 — Meilleure accuracy
         if not tt.empty and col_model and col_acc:
             val, model = _best(tt, col_acc, "max")
-            cards.append({
-                "label": "🎯 Accuracy max",
-                "value": f"{val:.3f}",
-                "sub": model,
-                "color": MODEL_COLORS.get(model, "#4B4FE0"),
-            })
+            cards.append({"label": "🎯 Accuracy max", "value": f"{val:.3f}", "sub": model,
+                          "color": MODEL_COLORS.get(model, "#4B4FE0")})
 
-        # KPI 2 — Gain vs Zero-shot
         if not tt.empty and col_model and col_acc:
             zs_row = tt[tt[col_model] == "Zero-shot"]
             if not zs_row.empty:
@@ -1913,82 +2093,49 @@ def _collect_kpis():
                 if not tt_ft.empty:
                     acc_best, model_best = _best(tt_ft, col_acc, "max")
                     gain_pts = (acc_best - acc_zs) * 100
-                    cards.append({
-                        "label": "📈 Gain vs Zero-shot",
-                        "value": f"+{gain_pts:.1f} pts",
-                        "sub": f"{model_best} vs baseline",
-                        "color": "#10B981",
-                    })
+                    cards.append({"label": "📈 Gain vs Zero-shot", "value": f"+{gain_pts:.1f} pts",
+                                  "sub": f"{model_best} vs baseline", "color": "#10B981"})
 
-        # KPI 3 — Meilleur compromis perf / params
         if not tt.empty and col_model and col_acc and col_params:
             tt_ft = tt[tt[col_model] != "Zero-shot"].copy()
             tt_ft = tt_ft[tt_ft[col_params] > 0]
             if not tt_ft.empty:
                 tt_ft["_score"] = tt_ft[col_acc] / np.log10(tt_ft[col_params] + 1)
-                idx_best = tt_ft["_score"].idxmax()
-                row = tt_ft.loc[idx_best]
-                cards.append({
-                    "label": "⚖️ Meilleur compromis",
-                    "value": str(row[col_model]),
-                    "sub": f"{row[col_acc]:.3f} acc · {int(row[col_params]):,} params".replace(",", " "),
-                    "color": MODEL_COLORS.get(str(row[col_model]), "#F5A623"),
-                })
+                row = tt_ft.loc[tt_ft["_score"].idxmax()]
+                cards.append({"label": "⚖️ Meilleur compromis", "value": str(row[col_model]),
+                              "sub": f"{row[col_acc]:.3f} acc · {int(row[col_params]):,} params".replace(",", " "),
+                              "color": MODEL_COLORS.get(str(row[col_model]), "#F5A623")})
 
-        # KPI 4 — Retrieval P@1 max
         if not tt.empty and col_model and col_p1:
             val, model = _best(tt, col_p1, "max")
-            cards.append({
-                "label": "🔍 Retrieval P@1",
-                "value": f"{val:.3f}",
-                "sub": f"{model} · text→image",
-                "color": MODEL_COLORS.get(model, "#4FD1C5"),
-            })
-
+            cards.append({"label": "🔍 Retrieval P@1", "value": f"{val:.3f}",
+                          "sub": f"{model} · text→image", "color": MODEL_COLORS.get(model, "#4FD1C5")})
     except Exception as exc:
         logger.warning("KPI indisponibles : %s", exc, exc_info=True)
 
-    # KPI 5 — Nombre de tests
-    n_tests = 53  # Valeur connue après `pytest tests/ -v`
-    cards.append({
-        "label": "🧪 Tests automatisés",
-        "value": f"{n_tests}",
-        "sub": "tous passent ✅",
-        "color": "#10B981",
-    })
+    cards.append({"label": "🧪 Tests automatisés", "value": "53", "sub": "tous passent ✅", "color": "#10B981"})
+    n_imgs = retriever.num_images
+    n_models = len(registry.names) if registry.names else 4
+    cards.append({"label": "📁 Images indexées", "value": f"{n_imgs:,}".replace(",", " ") if n_imgs else "—",
+                  "sub": f"{n_models} modèles comparés", "color": "#B794F4"})
 
-    # KPI 6 — Images indexées
-    cards.append({
-        "label": "📁 Images indexées",
-        "value": f"{retriever.num_images:,}".replace(",", " ") if retriever else "—",
-        "sub": f"{len(registry.names)} modèles comparés",
-        "color": "#B794F4",
-    })
-
-    # Cartes de repli : garantir au moins 4 KPIs
     if len(cards) < 4:
         fallbacks = [
-            {"label": "🎯 Accuracy max", "value": "—",
-             "sub": "TEAM_FINAL_TABLE absent", "color": "#4B4FE0"},
-            {"label": "📈 Gain vs Zero-shot", "value": "—",
-             "sub": "calcul indisponible", "color": "#10B981"},
-            {"label": "⚖️ Meilleur compromis", "value": "—",
-             "sub": "données manquantes", "color": "#F5A623"},
-            {"label": "🔍 Retrieval P@1", "value": "—",
-             "sub": "données manquantes", "color": "#4FD1C5"},
+            {"label": "🎯 Accuracy max", "value": "—", "sub": "TEAM_FINAL_TABLE absent", "color": "#4B4FE0"},
+            {"label": "📈 Gain vs Zero-shot", "value": "—", "sub": "calcul indisponible", "color": "#10B981"},
+            {"label": "⚖️ Meilleur compromis", "value": "—", "sub": "données manquantes", "color": "#F5A623"},
+            {"label": "🔍 Retrieval P@1", "value": "—", "sub": "données manquantes", "color": "#4FD1C5"},
         ]
         have = {c["label"] for c in cards}
-        cards = cards + [f for f in fallbacks if f["label"] not in have]
-
+        cards += [f for f in fallbacks if f["label"] not in have]
     return cards
 
 
-# =============================================================================
-# PAGE D'ACCUEIL — graphiques
-# =============================================================================
 def _team_view():
     """Retourne (DataFrame des 4 modèles canoniques, dict des colonnes) ou None."""
     try:
+        if analytics is None:
+            return None
         tt_full = analytics.team_table
         if tt_full is None or tt_full.empty:
             return None
@@ -2014,160 +2161,106 @@ def _team_view():
 
 
 def _style_fig(fig, title, height=390):
-    """Style commun : fond transparent (compatible mode sombre)."""
-    fig.update_layout(
-        title=dict(text=title, x=0.02, font=dict(size=16)),
-        height=height,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=45, r=25, t=60, b=50),
-        legend=dict(orientation="h", y=-0.18),
-        font=dict(family="IBM Plex Sans, sans-serif", size=12),
-    )
+    fig.update_layout(title=dict(text=title, x=0.02, font=dict(size=16)), height=height,
+                      paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                      margin=dict(l=45, r=25, t=60, b=50), legend=dict(orientation="h", y=-0.18),
+                      font=dict(family="IBM Plex Sans, sans-serif", size=12))
     fig.update_xaxes(gridcolor="rgba(128,128,128,.18)", zeroline=False)
     fig.update_yaxes(gridcolor="rgba(128,128,128,.18)", zeroline=False)
     return fig
 
 
 def _fig_scores():
-    """Accuracy et Retrieval P@1 par modèle (barres groupées)."""
     try:
         view = _team_view()
-        if view is None:
-            return None
+        if view is None: return None
         tt, c = view
         fig = go.Figure()
         if c["acc"]:
-            fig.add_trace(go.Bar(name="Accuracy", x=tt[c["model"]], y=tt[c["acc"]],
-                                 marker_color="#4B4FE0",
-                                 text=tt[c["acc"]].round(3), textposition="outside"))
+            fig.add_trace(go.Bar(name="Accuracy", x=tt[c["model"]], y=tt[c["acc"]], marker_color="#4B4FE0",
+                                  text=tt[c["acc"]].round(3), textposition="outside"))
         if c["p1"]:
-            fig.add_trace(go.Bar(name="Retrieval P@1", x=tt[c["model"]], y=tt[c["p1"]],
-                                 marker_color="#4FD1C5",
-                                 text=tt[c["p1"]].round(3), textposition="outside"))
-        if not fig.data:
-            return None
+            fig.add_trace(go.Bar(name="Retrieval P@1", x=tt[c["model"]], y=tt[c["p1"]], marker_color="#4FD1C5",
+                                  text=tt[c["p1"]].round(3), textposition="outside"))
+        if not fig.data: return None
         fig.update_layout(barmode="group", yaxis_range=[0, 1.1])
         return _style_fig(fig, "Performances par modèle")
     except Exception as exc:
-        logger.warning("fig_scores : %s", exc)
-        return None
+        logger.warning("fig_scores : %s", exc); return None
 
 
 def _fig_radar():
-    """Radar multi-critères : accuracy, retrieval, stabilité, légèreté."""
     try:
         view = _team_view()
-        if view is None:
-            return None
+        if view is None: return None
         tt, c = view
         axes, series = [], {}
         if c["acc"]:
-            axes.append("Accuracy")
-            series["Accuracy"] = tt[c["acc"]] / max(tt[c["acc"]].max(), 1e-9)
+            axes.append("Accuracy"); series["Accuracy"] = tt[c["acc"]] / max(tt[c["acc"]].max(), 1e-9)
         if c["p1"]:
-            axes.append("Retrieval P@1")
-            series["Retrieval P@1"] = tt[c["p1"]] / max(tt[c["p1"]].max(), 1e-9)
+            axes.append("Retrieval P@1"); series["Retrieval P@1"] = tt[c["p1"]] / max(tt[c["p1"]].max(), 1e-9)
         if c["drift"]:
-            axes.append("Stabilité (1 - drift)")
-            dmax = max(tt[c["drift"]].max(), 1e-9)
-            series["Stabilité (1 - drift)"] = 1 - tt[c["drift"]] / dmax * 0.9
+            axes.append("Stabilité (1 - drift)"); dmax = max(tt[c["drift"]].max(), 1e-9); series["Stabilité (1 - drift)"] = 1 - tt[c["drift"]] / dmax * 0.9
         if c["params"]:
-            axes.append("Légèreté")
-            lp = np.log10(tt[c["params"]].clip(lower=0) + 1)
-            series["Légèreté"] = 1 - lp / max(lp.max(), 1e-9) * 0.9
-        if len(axes) < 3:
-            return None
-
+            axes.append("Légèreté"); lp = np.log10(tt[c["params"]].clip(lower=0) + 1); series["Légèreté"] = 1 - lp / max(lp.max(), 1e-9) * 0.9
+        if len(axes) < 3: return None
         fig = go.Figure()
         for i, (_, row) in enumerate(tt.iterrows()):
-            name = str(row[c["model"]])
-            vals = [float(series[a].iloc[i]) for a in axes]
-            color = MODEL_COLORS.get(name, "#8A8FD8")
-            fig.add_trace(go.Scatterpolar(
-                r=vals + vals[:1], theta=axes + axes[:1], name=name,
-                fill="toself", opacity=0.55,
-                line=dict(color=color, width=2), fillcolor=color,
-            ))
-        fig.update_layout(polar=dict(
-            bgcolor="rgba(0,0,0,0)",
-            radialaxis=dict(range=[0, 1], showticklabels=False, gridcolor="rgba(128,128,128,.25)"),
-            angularaxis=dict(gridcolor="rgba(128,128,128,.25)"),
-        ))
+            name = str(row[c["model"]]); vals = [float(series[a].iloc[i]) for a in axes]; color = MODEL_COLORS.get(name, "#8A8FD8")
+            fig.add_trace(go.Scatterpolar(r=vals + vals[:1], theta=axes + axes[:1], name=name, fill="toself", opacity=0.55,
+                                          line=dict(color=color, width=2), fillcolor=color))
+        fig.update_layout(polar=dict(bgcolor="rgba(0,0,0,0)", radialaxis=dict(range=[0, 1], showticklabels=False, gridcolor="rgba(128,128,128,.25)"), angularaxis=dict(gridcolor="rgba(128,128,128,.25)")))
         return _style_fig(fig, "Profil multi-critères (1 = meilleur)")
     except Exception as exc:
-        logger.warning("fig_radar : %s", exc)
-        return None
+        logger.warning("fig_radar : %s", exc); return None
 
 
 def _fig_tradeoff():
-    """Accuracy en fonction du nombre de paramètres entraînables (échelle log)."""
     try:
         view = _team_view()
-        if view is None:
-            return None
+        if view is None: return None
         tt, c = view
-        if not (c["acc"] and c["params"]):
-            return None
-        tt = tt.copy()
-        tt["_p"] = tt[c["params"]].clip(lower=1)
+        if not (c["acc"] and c["params"]): return None
+        tt = tt.copy(); tt["_p"] = tt[c["params"]].clip(lower=1)
         fig = go.Figure()
         for _, row in tt.iterrows():
             name = str(row[c["model"]])
-            fig.add_trace(go.Scatter(
-                x=[row["_p"]], y=[row[c["acc"]]], mode="markers+text",
-                name=name, text=[name], textposition="top center",
-                marker=dict(size=22, color=MODEL_COLORS.get(name, "#8A8FD8"),
-                            line=dict(width=2, color="white")),
-            ))
-        fig.update_xaxes(type="log", title="Paramètres entraînables (log)")
-        fig.update_yaxes(title="Accuracy")
-        fig.update_layout(showlegend=False)
+            fig.add_trace(go.Scatter(x=[row["_p"]], y=[row[c["acc"]]], mode="markers+text", name=name, text=[name], textposition="top center",
+                                     marker=dict(size=22, color=MODEL_COLORS.get(name, "#8A8FD8"), line=dict(width=2, color="white"))))
+        fig.update_xaxes(type="log", title="Paramètres entraînables (log)"); fig.update_yaxes(title="Accuracy"); fig.update_layout(showlegend=False)
         return _style_fig(fig, "Compromis performance ↔ budget de paramètres")
     except Exception as exc:
-        logger.warning("fig_tradeoff : %s", exc)
-        return None
+        logger.warning("fig_tradeoff : %s", exc); return None
 
 
 def _fig_classes():
-    """Accuracy par classe : Zero-shot vs A2 vs B."""
     try:
+        if analytics is None: return None
         df = analytics.confusion_delta
-        if df is None or df.empty:
-            return None
-        try:
-            col_class = _pick_col(df, "class", "Class", "classe", "label")
-        except KeyError:
-            col_class = df.columns[0]
+        if df is None or df.empty: return None
+        try: col_class = _pick_col(df, "class", "Class", "classe", "label")
+        except KeyError: col_class = df.columns[0]
         fig = go.Figure()
-        for model, col in [
-            ("Zero-shot", _pick_col_or_none(df, "acc_zs", "acc_ZS", "accuracy_zs", "acc_zeroshot")),
-            ("A2 LoRA V+T", _pick_col_or_none(df, "acc_a2", "acc_A2", "accuracy_a2")),
-            ("B LoRA V only", _pick_col_or_none(df, "acc_b", "acc_B", "accuracy_b")),
-        ]:
+        for model, col in [("Zero-shot", _pick_col_or_none(df, "acc_zs", "acc_ZS", "accuracy_zs", "acc_zeroshot")),
+                           ("A2 LoRA V+T", _pick_col_or_none(df, "acc_a2", "acc_A2", "accuracy_a2")),
+                           ("B LoRA V only", _pick_col_or_none(df, "acc_b", "acc_B", "accuracy_b"))]:
             if col is not None:
-                fig.add_trace(go.Bar(name=model, x=df[col_class], y=df[col],
-                                     marker_color=MODEL_COLORS.get(model)))
-        if not fig.data:
-            return None
+                fig.add_trace(go.Bar(name=model, x=df[col_class], y=df[col], marker_color=MODEL_COLORS.get(model)))
+        if not fig.data: return None
         fig.update_layout(barmode="group", xaxis_tickangle=-35)
         return _style_fig(fig, "Accuracy par classe")
     except Exception as exc:
-        logger.warning("fig_classes : %s", exc)
-        return None
+        logger.warning("fig_classes : %s", exc); return None
 
 
 def _plot_or_note(fig, msg):
-    if fig is None:
-        gr.Markdown(f"⚠️ {msg}")
-    else:
-        gr.Plot(value=fig, elem_classes="chart-card", show_label=False)
+    if fig is None: gr.Markdown(f"⚠️ {msg}")
+    else: gr.Plot(value=fig, elem_classes="chart-card", show_label=False)
 
 
 def _delta_line():
     view = _team_view()
-    if view is None:
-        return ""
+    if view is None: return ""
     tt, c = view
     try:
         zs = tt.loc[tt[c["model"]] == "Zero-shot", c["acc"]].iloc[0]
@@ -2177,23 +2270,15 @@ def _delta_line():
         return ""
 
 
-# =============================================================================
-# PAGE D'ACCUEIL
-# =============================================================================
 def tab_home(tab_items, n_sections):
-    """Page affichée au lancement : hero, KPI, accès rapides, graphiques, essai rapide.
-
-    Retourne {tab_id: bouton} pour que build_app() câble la navigation.
-    """
-    n_images = retriever.num_images if retriever else 2000
-
+    """Page affichée au lancement : hero, KPI, accès rapides, graphiques, essai rapide."""
+    n_images = retriever.num_images or 2000
+    retriever_ok = is_retriever_available()
     gr.HTML(hero_html(CLASSES, registry.names, n_sections, n_images))
-
     gr.HTML(section_html("📌", "Chiffres clés", "Synthèse des 4 modèles comparés"))
     gr.HTML(kpi_html(_collect_kpis()))
-    gr.HTML(status_html(registry.names, retriever is not None, n_images))
+    gr.HTML(status_html(registry.names, retriever_ok, n_images))
 
-    # --- Accès rapides ---
     gr.HTML(section_html("🚀", "Accès rapide", "Un clic pour ouvrir une section"))
     buttons = {}
     for i in range(0, len(tab_items), 4):
@@ -2201,24 +2286,16 @@ def tab_home(tab_items, n_sections):
             for tab_id, label in tab_items[i:i + 4]:
                 buttons[tab_id] = gr.Button(label, elem_classes="qcard")
 
-    # --- Visualisations ---
     gr.HTML(section_html("📊", "Visualisations", "Résultats clés du projet en un coup d'œil"))
     with gr.Row():
-        with gr.Column():
-            _plot_or_note(_fig_scores(), "Scores indisponibles (TEAM_FINAL_TABLE).")
-        with gr.Column():
-            _plot_or_note(_fig_radar(), "Radar indisponible (colonnes manquantes).")
+        with gr.Column(): _plot_or_note(_fig_scores(), "Scores indisponibles (TEAM_FINAL_TABLE).")
+        with gr.Column(): _plot_or_note(_fig_radar(), "Radar indisponible (colonnes manquantes).")
     with gr.Row():
-        with gr.Column():
-            _plot_or_note(_fig_tradeoff(), "Compromis indisponible (accuracy / params manquants).")
-        with gr.Column():
-            _plot_or_note(_fig_classes(), "Données par classe indisponibles (team_confusion_delta.csv).")
+        with gr.Column(): _plot_or_note(_fig_tradeoff(), "Compromis indisponible (accuracy / params manquants).")
+        with gr.Column(): _plot_or_note(_fig_classes(), "Données par classe indisponibles (team_confusion_delta.csv).")
 
-    # --- Essai rapide ---
     gr.HTML(section_html("⚡", "Essai rapide", "Déposez une image : prédiction immédiate"))
-    default_model = "A2 LoRA V+T" if "A2 LoRA V+T" in registry.names else (
-        registry.names[0] if registry.names else "Zero-shot"
-    )
+    default_model = "A2 LoRA V+T" if "A2 LoRA V+T" in registry.names else (registry.names[0] if registry.names else "Zero-shot")
     with gr.Row():
         with gr.Column(scale=1):
             q_img = gr.Image(type="pil", label="📷 Image", height=260)
@@ -2227,82 +2304,236 @@ def tab_home(tab_items, n_sections):
             q_label = gr.Label(label="🎯 Prédiction", num_top_classes=5)
 
     def _quick(image, model_name):
-        if image is None:
-            return None
+        if image is None: return None
         try:
             top_dict, _ = classify(registry, image, model_name=model_name, top_k=5)
             return top_dict
         except Exception as e:
-            logger.error("Essai rapide erreur : %s", e, exc_info=True)
-            return None
+            logger.error("Essai rapide erreur : %s", e, exc_info=True); return None
 
     q_img.change(_quick, [q_img, q_model], q_label)
     q_model.change(_quick, [q_img, q_model], q_label)
-
     example_files = sorted(EXAMPLES_DIR.glob("*.png"))[:6]
     if example_files:
-        gr.Examples(examples=[[str(f)] for f in example_files],
-                    inputs=[q_img], label="📸 Exemples")
+        gr.Examples(examples=[[str(f)] for f in example_files], inputs=[q_img], label="📸 Exemples")
 
-    # --- Modèles + insights ---
     gr.HTML(section_html("🧠", "Les modèles comparés"))
     gr.HTML(model_cards_html())
     gr.HTML(section_html("💡", "Ce qu'il faut retenir"))
     gr.HTML(insights_html(_delta_line()))
 
-    # --- Détails (repliables) ---
     with gr.Accordion("🔥 Heatmap TEAM_FINAL_TABLE", open=False):
-        heatmap_path = analytics.get_figure("TEAM_FINAL_TABLE_heatmap.png", "team")
-        if heatmap_path:
-            gr.Image(value=heatmap_path, show_label=False)
-        else:
-            gr.Markdown("⚠️ Heatmap non trouvée")
-
+        heatmap_path = analytics.get_figure("TEAM_FINAL_TABLE_heatmap.png", "team") if analytics else None
+        if heatmap_path: gr.Image(value=heatmap_path, show_label=False)
+        else: gr.Markdown("⚠️ Heatmap non trouvée")
     with gr.Accordion("📸 Slide de conclusion", open=False):
-        slide_path = analytics.get_figure("SLIDE_CONCLUSION.png", "team")
-        if slide_path:
-            gr.Image(value=slide_path, show_label=False)
-        else:
-            gr.Markdown("⚠️ Slide non trouvée")
-
+        slide_path = analytics.get_figure("SLIDE_CONCLUSION.png", "team") if analytics else None
+        if slide_path: gr.Image(value=slide_path, show_label=False)
+        else: gr.Markdown("⚠️ Slide non trouvée")
     view = _team_view()
     if view is not None:
         with gr.Accordion("📋 Tableau récapitulatif des modèles", open=False):
             gr.Dataframe(value=view[0], interactive=False)
-
     return buttons
 
 
 # =============================================================================
+# ONGLET — GUIDE DE DÉMO
+# =============================================================================
+def tab_guide():
+    """Guide pas à pas pour la démonstration de soutenance."""
+    gr.Markdown("""
+    ### 📖 Guide de Démonstration — Soutenance
+
+    Ce guide vous accompagne pour une **démo fluide de 5 minutes** devant le jury.
+    """)
+    with gr.Tabs():
+        with gr.Tab("🎬 Parcours 5 minutes"):
+            gr.Markdown("""
+            ### 🎬 Parcours de démonstration (5 min)
+
+            **Ordre recommandé pour la soutenance :**
+
+            | **Temps** | **Onglet** | **Ce qu'on montre** |
+            | :-- | :-- | :-- |
+            | 0:00 – 0:30 | 🎯 **Classification** | Upload d'une image, top-5, distribution |
+            | 0:30 – 1:00 | 🎨 **Comparateur** | Les 4 modèles côte à côte + consensus |
+            | 1:00 – 1:30 | 🔤 **Prompt Lab** | Changer le template en direct |
+            | 1:30 – 2:15 | 🔍 **Retrieval** | Upload sneaker → top-12 cohérents |
+            | 2:15 – 2:45 | 🔎 **Cross-Modal** | Taper "a red dress" → images |
+            | 2:45 – 3:15 | 🧭 **Drift Explorer** | Impact du fine-tuning par classe |
+            | 3:15 – 3:45 | 📊 **Analytics** | Pareto, heatmap, slide |
+            | 3:45 – 4:15 | 🌡️ **Calibration** | Reliability diagram + simulateur |
+            | 4:15 – 4:45 | 🧪 **Playground** | Batch + export CSV |
+            | 4:45 – 5:00 | 🧠 **Insights** | Robustesse + oubli catastrophique |
+
+            **Phrases clés à dire :**
+            - *"J'ai 53 tests automatisés qui valident toute la chaîne."*
+            - *"Le retrieval atteint 88% d'accuracy@5."*
+            - *"LoRA V only fait 2× plus léger que A2 pour 98% des perfs."*
+            """)
+        with gr.Tab("💡 Points forts"):
+            gr.Markdown("""
+            ### 💡 Points forts du projet
+
+            **🔬 Scientifique :**
+            - Comparaison rigoureuse **4 modèles** (ZS / A1 / A2 / B)
+            - Mesure du **drift angulaire** après fine-tuning
+            - **Calibration** (ECE, reliability diagram)
+            - **Oubli catastrophique** (OOD transfer)
+            - **Multi-seed** pour la stabilité
+
+            **🛠️ Technique :**
+            - **53 tests automatisés** (couverture complète)
+            - **Logging structuré** avec rotation
+            - **Retriever multi-modèle** cohérent
+            - **Cross-modal** texte → images
+            - **Export CSV** sur 3 onglets
+
+            **🎨 UX :**
+            - **Page d'accueil** + **menu latéral** moderne
+            - **Thème pro** avec gradient + mode sombre
+            - **Badges de statut**
+            - **Guide de démo** intégré
+
+            **📊 Métriques clés à retenir :**
+            - Classification accuracy : **~85%** (A2)
+            - Retrieval P@1 : **~65%** (Zero-shot)
+            - Retrieval accuracy@5 : **88%**
+            - Drift minimal : B LoRA V only
+            - Params : A1 (5K) < B (~50K) < A2 (~100K)
+            """)
+        with gr.Tab("❓ Questions du jury"):
+            gr.Markdown("""
+            ### ❓ Questions probables du jury + réponses
+
+            **Q: Pourquoi LoRA et pas un fine-tuning complet ?**
+            > LoRA réduit drastiquement le nombre de paramètres entraînables (de ~150M à ~50-100K) tout en préservant les performances. C'est crucial pour un dataset limité comme Fashion-MNIST.
+
+            **Q: Comment expliquez-vous le trade-off adaptation/généralité ?**
+            > Le LoRA V+T (A2) obtient la meilleure accuracy mais augmente le drift. Le LoRA V only (B) préserve mieux la généralité OOD pour un coût 2× moindre.
+
+            **Q: Qu'est-ce que le drift angulaire ?**
+            > C'est la distance angulaire moyenne entre les embeddings avant et après fine-tuning. Il mesure à quel point l'encoder a été modifié.
+
+            **Q: Comment garantissez-vous la fiabilité ?**
+            > 53 tests automatisés couvrent : labels, embeddings, retrieval, classification, exports, cohérence. Chaque test passe en 40s sur CPU.
+
+            **Q: Pourquoi 88% accuracy@5 au retrieval ?**
+            > C'est le taux où au moins une des 5 premières images retournées partage la classe de la requête. Cela valide la qualité des embeddings CLIP.
+
+            **Q: Le modèle est-il calibré ?**
+            > Voir onglet 🌡️ Calibration. La distribution montre si les confiances sont fiables. Un bon modèle ne doit pas être systématiquement sur-confiant.
+            """)
+        with gr.Tab("🚀 Extensions futures"):
+            gr.Markdown("""
+            ### 🚀 Extensions futures proposées
+
+            **Court terme :**
+            - 🔥 Grad-CAM : visualiser les zones d'attention CLIP
+            - 📉 Courbes d'entraînement en direct
+            - 🎥 Mode webcam pour démo live
+
+            **Moyen terme :**
+            - 🌍 Autres datasets (CIFAR-10, Oxford Pets)
+            - 🧠 Autres backbones (ViT-L/14, SigLIP)
+            - ☁️ Déploiement HuggingFace Spaces
+            - 🐳 Dockerfile + CI/CD
+
+            **Long terme :**
+            - 🎯 Few-shot learning adaptatif
+            - 🔍 Recherche hybride texte+image
+            - 📱 Interface mobile (PWA)
+
+            **Pistes de recherche :**
+            - Comparaison LoRA vs DoRA vs AdaptFormer
+            - Analyse théorique du drift
+            - Curriculum learning sur Fashion-MNIST
+            """)
+        with gr.Tab("📋 Checklist soutenance"):
+            gr.Markdown("""
+            ### 📋 Checklist avant la soutenance
+
+            **⏰ 24h avant :**
+            - □ `pytest tests/ -v` → doit afficher **53 passed**
+            - □ `python app.py` → vérifier toutes les **sections du menu**
+            - □ Tester chaque onglet avec **une image de chaque classe**
+            - □ Prendre des **screenshots** de chaque onglet
+            - □ Préparer **2-3 images** d'exemple (sneaker, dress, coat)
+
+            **⏰ 1h avant :**
+            - □ Dossier `exports/` **vide** (pour montrer l'export en live)
+            - □ Dossier `logs/` prêt
+            - □ Navigateur ouvert sur `http://localhost:7860`
+            - □ Terminal ouvert avec `pytest` prêt à lancer
+            - □ Slides ouvertes en arrière-plan
+
+            **⏰ Pendant la démo :**
+            - □ Suivre le **Parcours 5 minutes**
+            - □ Montrer `pytest tests/ -v` (preuve de robustesse)
+            - □ Exporter un CSV pour montrer la traçabilité
+            - □ Rester calme sur les questions techniques
+
+            **⏰ Après :**
+            - □ Garder l'app ouverte pour les questions
+            - □ Avoir le README sous la main
+            - □ Noter les retours du jury
+            """)
+
+    gr.Markdown("### 📥 Exporter ce guide")
+    with gr.Row():
+        btn_export_guide = gr.Button("📥 Exporter le guide en Markdown", variant="secondary")
+        export_guide_md = gr.Markdown()
+
+    def _export_guide():
+        text = """# Guide de Démonstration — CLIP LoRA Studio
+
+## Parcours 5 minutes
+
+1. 🎯 Classification (30s)
+2. 🎨 Comparateur (30s)
+3. 🔤 Prompt Lab (30s)
+4. 🔍 Retrieval (45s)
+5. 🔎 Cross-Modal (30s)
+6. 🧭 Drift Explorer (30s)
+7. 📊 Analytics (30s)
+8. 🌡️ Calibration (30s)
+9. 🧪 Playground (30s)
+10. 🧠 Insights (15s)
+
+## Points forts
+
+- 11 onglets, 53 tests, 4 modèles
+- Accuracy 85%, P@1 65%, accuracy@5 88%
+- LoRA V only : 2× plus léger pour 98% des perfs
+
+## Extensions futures
+
+- Grad-CAM, datasets alternatifs, Docker, HF Spaces
+"""
+        path = _export_markdown_summary(text, prefix="guide_demo")
+        return f"✅ Exporté : `{path}`" if path else "❌ Échec de l'export."
+
+    btn_export_guide.click(_export_guide, outputs=[export_guide_md])
+
+
+# =============================================================================
 # ONGLETS — (id, label, fonction, tag démo, phrase, couleur)
-# La page d'accueil (id « home ») est gérée à part dans build_app().
 # =============================================================================
 def _tab_specs():
     return [
-        ("classification", "🎯 Classification", tab_classification,
-         "0:00 – 0:30", "Importez une image : top-5 et distribution des probabilités.", "#4B4FE0"),
-        ("compare", "🎨 Comparateur", tab_comparator,
-         "0:30 – 1:00", "Les 4 modèles côte à côte, avec le consensus.", "#50C878"),
-        ("prompt_lab", "🔤 Prompt Lab", tab_prompt_lab,
-         "1:00 – 1:30", "Changez le template en direct et observez l'effet sur la prédiction.", "#7C83FF"),
-        ("retrieval", "🔍 Retrieval", tab_retrieval,
-         "1:30 – 2:15", "Importez une sneaker : les 12 images les plus proches doivent être cohérentes.", "#4FD1C5"),
-        ("cross_modal", "🔎 Cross-Modal", tab_cross_modal,
-         "2:15 – 2:45", "Tapez « a red dress » : le texte retrouve les images.", "#63B3ED"),
-        ("drift", "🧭 Drift Explorer", tab_drift_explorer,
-         "2:45 – 3:15", "Mesurez l'impact du fine-tuning classe par classe.", "#F687B3"),
-        ("analytics", "📊 Analytics", tab_analytics,
-         "3:15 – 3:45", "Pareto, heatmap et slide de conclusion.", "#B794F4"),
-        ("calibration", "🌡️ Calibration", tab_calibration,
-         "3:45 – 4:15", "Reliability diagram et simulateur de confiance.", "#F6AD55"),
-        ("playground", "🧪 Playground", tab_playground,
-         "4:15 – 4:45", "Analysez un lot d'images et exportez le CSV.", "#68D391"),
-        ("insights", "🧠 Insights", tab_insights,
-         "4:45 – 5:00", "Robustesse, oubli catastrophique, multi-seed et budget de paramètres.", "#FC8181"),
-        ("exports", "📥 Exports", tab_exports,
-         "Traçabilité", "Tous les fichiers générés par l'application, prêts à télécharger.", "#A0AEC0"),
-        ("guide", "📖 Guide", tab_guide,
-         "Soutenance", "Parcours de 5 minutes, questions du jury et checklist.", "#4B4FE0"),
+        ("classification", "🎯 Classification", tab_classification, "0:00 – 0:30", "Importez une image : top-5 et distribution des probabilités.", "#4B4FE0"),
+        ("compare", "🎨 Comparateur", tab_comparator, "0:30 – 1:00", "Les 4 modèles côte à côte, avec le consensus.", "#50C878"),
+        ("prompt_lab", "🔤 Prompt Lab", tab_prompt_lab, "1:00 – 1:30", "Changez le template en direct et observez l'effet sur la prédiction.", "#7C83FF"),
+        ("retrieval", "🔍 Retrieval", tab_retrieval, "1:30 – 2:15", "Importez une sneaker : les 12 images les plus proches doivent être cohérentes.", "#4FD1C5"),
+        ("cross_modal", "🔎 Cross-Modal", tab_cross_modal, "2:15 – 2:45", "Tapez « a red dress » : le texte retrouve les images.", "#63B3ED"),
+        ("drift", "🧭 Drift Explorer", tab_drift_explorer, "2:45 – 3:15", "Mesurez l'impact du fine-tuning classe par classe.", "#F687B3"),
+        ("analytics", "📊 Analytics", tab_analytics, "3:15 – 3:45", "Pareto, heatmap et slide de conclusion.", "#B794F4"),
+        ("calibration", "🌡️ Calibration", tab_calibration, "3:45 – 4:15", "Reliability diagram et simulateur de confiance.", "#F6AD55"),
+        ("playground", "🧪 Playground", tab_playground, "4:15 – 4:45", "Analysez un lot d'images et exportez le CSV.", "#68D391"),
+        ("insights", "🧠 Insights", tab_insights, "4:45 – 5:00", "Robustesse, oubli catastrophique, multi-seed et budget de paramètres.", "#FC8181"),
+        ("exports", "📥 Exports", tab_exports, "Traçabilité", "Tous les fichiers générés par l'application, prêts à télécharger.", "#A0AEC0"),
+        ("guide", "📖 Guide", tab_guide, "Soutenance", "Parcours de 5 minutes, questions du jury et checklist.", "#4B4FE0"),
     ]
 
 
@@ -2311,65 +2542,37 @@ def _tab_specs():
 # =============================================================================
 def build_app():
     specs = _tab_specs()
-    n_sections = len(specs) + 1  # + accueil
-
+    n_sections = len(specs) + 1
     nav_choices = [("🏠 Accueil", "home")] + [(label, tab_id) for tab_id, label, *_ in specs]
     tab_items = [(tab_id, label) for tab_id, label, *_ in specs]
-
     labels = {"home": "🏠 Accueil"}
     labels.update({tab_id: label for tab_id, label, *_ in specs})
 
     with gr.Blocks(theme=build_theme(), title=APP_TITLE, css=CSS) as demo:
-
-        # ---------------- HEADER FIXE ----------------
         with gr.Row(elem_id="topbar"):
             header = gr.HTML(topbar_html(labels["home"]))
-            btn_theme = gr.Button("🌓 Clair / sombre", size="sm",
-                                  variant="secondary", elem_id="theme-btn")
+            btn_theme = gr.Button("🌓 Clair / sombre", size="sm", variant="secondary", elem_id="theme-btn")
 
         with gr.Row(equal_height=False, elem_id="layout"):
-
-            # ---------------- MENU LATÉRAL FIXE ----------------
             with gr.Column(scale=0, min_width=250, elem_id="sidebar"):
                 gr.HTML(sidebar_brand_html())
-                nav = gr.Radio(
-                    choices=nav_choices,
-                    value="home",
-                    show_label=False,
-                    container=False,
-                    interactive=True,
-                    elem_id="nav-radio",
-                )
+                nav = gr.Radio(choices=nav_choices, value="home", show_label=False, container=False,
+                               interactive=True, elem_id="nav-radio")
 
-            # ---------------- CONTENU ----------------
             with gr.Column(scale=1, min_width=0, elem_id="content-col"):
-                # Onglets natifs masqués en CSS (#main-tabs) : le menu latéral les pilote.
                 with gr.Tabs(elem_id="main-tabs", selected="home") as tabs:
                     with gr.Tab("🏠 Accueil", id="home"):
                         home_buttons = tab_home(tab_items, n_sections)
-
                     for tab_id, label, fn, tag, note, color in specs:
                         with gr.Tab(label, id=tab_id):
                             gr.HTML(demo_note_html(tag, note, color))
                             fn()
-
                 gr.HTML(footer_html(n_sections))
 
-        # ---------------- NAVIGATION ----------------
-        nav.change(
-            lambda v: (gr.Tabs(selected=v), topbar_html(labels.get(v, ""))),
-            inputs=nav,
-            outputs=[tabs, header],
-        )
-
+        nav.change(lambda v: (gr.update(selected=v), topbar_html(labels.get(v, ""))), inputs=nav, outputs=[tabs, header])
         for tab_id, btn in home_buttons.items():
-            btn.click(
-                lambda tid=tab_id: gr.update(value=tid),
-                outputs=[nav],
-            )
-
+            btn.click(lambda tid=tab_id: gr.update(value=tid), outputs=[nav])
         btn_theme.click(None, None, None, js=TOGGLE_DARK_JS)
-
     return demo
 
 
@@ -2378,12 +2581,8 @@ def build_app():
 # =============================================================================
 if __name__ == "__main__":
     import os
-
     PORT = int(os.environ.get("PORT", 7860))
+    IS_RENDER = os.environ.get("RENDER", "false").lower() == "true"
+    logger.info("Démarrage de l'app sur le port %d", PORT)
     demo = build_app()
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=PORT,
-        show_error=True,
-        share=False,
-    )
+    demo.launch(server_name="0.0.0.0", server_port=PORT, show_error=True, share=False, quiet=IS_RENDER, show_api=False)
