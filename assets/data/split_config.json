@@ -1,0 +1,7 @@
+{
+  "seed": 42,
+  "n_eval": 2000,
+  "n_train": 4000,
+  "eval_idx_hash": 9902945,
+  "train_idx_hash": 119078924
+}
